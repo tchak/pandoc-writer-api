@@ -1,12 +1,16 @@
 import AutoLoad from 'fastify-autoload';
 import * as path from 'path';
 import { FastifyInstance } from 'fastify';
+import cors from 'fastify-cors';
+import helmet from 'fastify-helmet';
 
 export default async function (
   fastify: FastifyInstance,
   opts: unknown
 ): Promise<void> {
   // Place here your custom code!
+  fastify.register(cors);
+  fastify.register(helmet);
 
   // Do not touch the following lines
 
