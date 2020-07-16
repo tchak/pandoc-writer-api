@@ -1,0 +1,41 @@
+{
+  "name": "pandown-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.ts",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "tap test/**/*.test.ts",
+    "start": "yarn build:ts && fastify start -l info dist/app.js",
+    "build:ts": "tsc",
+    "lint": "eslint . --ext .ts",
+    "dev": "tsc && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\"  \"tsc -w\" \"fastify start -w -l info -P dist/app.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^3.0.0",
+    "fastify-autoload": "^3.0.2",
+    "fastify-cli": "^2.0.2",
+    "fastify-plugin": "^2.0.0",
+    "knex": "^0.21.2",
+    "objection": "^2.2.1",
+    "pg": "^8.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.18",
+    "@types/tap": "^14.10.0",
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
+    "@typescript-eslint/parser": "^3.3.0",
+    "concurrently": "^5.1.0",
+    "eslint": "^7.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.0.5",
+    "tap": "^14.0.0",
+    "typescript": "^3.9.6"
+  }
+}
