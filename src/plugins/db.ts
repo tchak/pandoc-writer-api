@@ -4,22 +4,16 @@ import Knex from 'knex';
 import knexConfig from '../../knexfile';
 import { Model } from 'objection';
 
+const env = process.env['NODE_ENV'] || 'development';
+
 // the use of fastify-plugin is required to be able
 // to export the decorators to the outer scope
 export default fp(async function (fastify: FastifyInstance) {
-  const knex = Knex(knexConfig.development);
+  const knex = Knex(knexConfig[env]);
   Model.knex(knex);
 
-  fastify.decorate('knex', knex);
-  fastify.addHook('onClose', async () => {
+  fastify.addHook('onClose', async (_, done) => {
     await knex.destroy();
+    done();
   });
 });
-
-// Using Typescript you need to extend FastifyInstance
-// type declaration with your plugin
-declare module 'fastify' {
-  export interface FastifyInstance {
-    knex(): Knex;
-  }
-}
