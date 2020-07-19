@@ -73,14 +73,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       reply.status(201);
       return { data: change.$toJsonApi() };
     } catch (e) {
-      reply.status(412);
-      return {
-        errors: [
-          {
-            detail: e.message,
-          },
-        ],
-      };
+      reply.preconditionFailed();
     }
   });
 

@@ -3,6 +3,8 @@ import * as path from 'path';
 import { FastifyInstance } from 'fastify';
 import cors from 'fastify-cors';
 import helmet from 'fastify-helmet';
+import accepts from 'fastify-accepts';
+import sensible from 'fastify-sensible';
 
 export default async function (
   fastify: FastifyInstance,
@@ -11,6 +13,8 @@ export default async function (
   // Place here your custom code!
   fastify.register(cors);
   fastify.register(helmet);
+  fastify.register(accepts);
+  fastify.register(sensible);
 
   // Do not touch the following lines
 

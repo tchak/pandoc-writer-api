@@ -50,24 +50,25 @@ async function request(
   body?: unknown,
   headers?: Record<string, string>
 ): Promise<TestResponse> {
+  const defaultHeaders = body
+    ? {
+        accept: 'application/vnd.api+json',
+        'content-type': 'application/vnd.api+json',
+      }
+    : { accept: 'application/vnd.api+json' };
+  headers = Object.assign(defaultHeaders, headers);
   const res = await app.inject({
     url,
     method: method || 'GET',
-    headers: Object.assign(
-      body
-        ? {
-            accept: 'application/vnd.api+json',
-            'content-type': 'application/vnd.api+json',
-          }
-        : { accept: 'application/vnd.api+json' },
-      headers
-    ),
+    headers,
     payload: body ? JSON.stringify(body) : undefined,
   });
 
+  const isJSON = headers.accept.match(/json/);
+
   return {
     status: res.statusCode,
-    body: res.payload ? JSON.parse(res.payload) : undefined,
+    body: res.payload && isJSON ? JSON.parse(res.payload) : res.payload,
     headers: res.headers as Record<string, string>,
   };
 }
