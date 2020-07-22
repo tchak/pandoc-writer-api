@@ -34,6 +34,7 @@
     "fastify-sensible": "^3.0.1",
     "jsdom": "^16.3.0",
     "knex": "^0.21.2",
+    "node-fetch": "^3.0.0-beta.7",
     "node-htmldiff": "^0.9.3",
     "nodejs-sh": "^0.2.0",
     "objection": "^2.2.1",
