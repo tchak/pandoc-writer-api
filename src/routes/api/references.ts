@@ -72,7 +72,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     );
 
     reply.status(201);
-    return { data: references.map((reference) => reference.$toJsonApi()) };
+    return { data: references.map(({ id }) => id) };
   });
 
   fastify.get<GetReferencesRequest>('/references', async function (request) {

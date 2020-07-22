@@ -7,6 +7,7 @@ import { Record as OrbitRecord } from '@orbit/data';
 import { uuid } from '@orbit/utils';
 
 import Document from '../../models/document';
+import Reference from '../../models/reference';
 import { normalise } from '../../lib/pandiff';
 
 interface CreateDocumentRequest extends RequestGenericInterface {
@@ -33,6 +34,15 @@ interface GetDocumentRequest extends RequestGenericInterface {
 interface DestroyDocumentRequest extends RequestGenericInterface {
   Params: {
     id: string;
+  };
+}
+
+interface GetDocumentReferencesRequest extends RequestGenericInterface {
+  Params: {
+    id: string;
+  };
+  Querystring: {
+    fields?: string[];
   };
 }
 
@@ -126,6 +136,21 @@ export default async function (fastify: FastifyInstance): Promise<void> {
 
     reply.status(204);
   });
+
+  fastify.get<GetDocumentReferencesRequest>(
+    '/documents/:id/references',
+    async function (request) {
+      const document = await Document.query().findById(request.params.id);
+      const query = document.$relatedQuery<Reference>('references');
+      const references = await query;
+
+      return {
+        data: references.map((reference) =>
+          reference.$toJsonApi(request.query.fields)
+        ),
+      };
+    }
+  );
 }
 
 async function renderDocument(

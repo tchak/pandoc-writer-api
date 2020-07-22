@@ -3,8 +3,11 @@ import {
   snakeCaseMappers,
   ColumnNameMappers,
   JSONSchema,
+  RelationMappings,
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
+
+import Document from './document';
 
 export default class Reference extends Model {
   static get tableName(): string {
@@ -13,6 +16,23 @@ export default class Reference extends Model {
 
   static get columnNameMappers(): ColumnNameMappers {
     return snakeCaseMappers();
+  }
+
+  static get relationMappings(): RelationMappings {
+    return {
+      documents: {
+        relation: Model.ManyToManyRelation,
+        modelClass: Document,
+        join: {
+          from: 'references.id',
+          through: {
+            from: 'documents_references.reference_id',
+            to: 'documents_references.document_id',
+          },
+          to: 'documents.id',
+        },
+      },
+    };
   }
 
   static jsonSchema: JSONSchema = {

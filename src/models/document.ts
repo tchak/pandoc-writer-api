@@ -7,6 +7,7 @@ import {
 import { Record as OrbitRecord } from '@orbit/data';
 
 import Change from './change';
+import Reference from './reference';
 
 export default class Document extends Model {
   static get tableName(): string {
@@ -25,6 +26,18 @@ export default class Document extends Model {
         join: {
           from: 'documents.id',
           to: 'changes.document_id',
+        },
+      },
+      references: {
+        relation: Model.ManyToManyRelation,
+        modelClass: Reference,
+        join: {
+          from: 'documents.id',
+          through: {
+            from: 'documents_references.document_id',
+            to: 'documents_references.reference_id',
+          },
+          to: 'references.id',
         },
       },
     };
