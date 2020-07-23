@@ -58,7 +58,6 @@ export class DocumentVersion extends BaseModel {
 
     properties: {
       id: { type: 'string' },
-      documentId: { type: 'string' },
       sha: { type: 'string' },
       data: {
         type: 'array',
@@ -71,6 +70,7 @@ export class DocumentVersion extends BaseModel {
 
   static get modifiers(): Modifiers {
     return {
+      ...super.modifiers,
       last(builder) {
         builder.orderBy('created_at').limit(1);
       },

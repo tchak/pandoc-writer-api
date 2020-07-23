@@ -1,4 +1,4 @@
-import { Model, RelationMappings, JSONSchema, Modifiers } from 'objection';
+import { Model, RelationMappings, JSONSchema } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
 

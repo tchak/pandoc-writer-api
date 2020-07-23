@@ -2,8 +2,10 @@ exports.up = async function (knex) {
   await knex.schema.createTable('references', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.jsonb('data').notNull();
-    table.timestamp('created_at').defaultTo(knex.fn.now()).notNull();
-    table.timestamp('updated_at').defaultTo(knex.fn.now()).notNull();
+
+    table.timestamp('created_at').defaultTo(knex.fn.now()).notNull().index();
+    table.timestamp('updated_at').defaultTo(knex.fn.now()).notNull().index();
+    table.timestamp('deleted_at').index();
   });
 
   await knex.schema.createTable('documents_references', (table) => {

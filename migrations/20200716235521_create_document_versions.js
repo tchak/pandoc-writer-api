@@ -12,8 +12,9 @@ exports.up = function (knex) {
       .onDelete('CASCADE')
       .index();
 
-    table.timestamp('created_at').defaultTo(knex.fn.now()).notNull();
-    table.timestamp('updated_at').defaultTo(knex.fn.now()).notNull();
+    table.timestamp('created_at').defaultTo(knex.fn.now()).notNull().index();
+    table.timestamp('updated_at').defaultTo(knex.fn.now()).notNull().index();
+    table.timestamp('deleted_at').index();
   });
 };
 
