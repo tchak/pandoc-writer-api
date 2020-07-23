@@ -1,16 +1,22 @@
 import {
   Model,
   RelationMappings,
-  snakeCaseMappers,
-  ColumnNameMappers,
   JSONSchema,
   Modifiers,
+  ModelOptions,
+  QueryContext,
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { serialize } from 'remark-slate';
 import crypto from 'crypto';
 
-import { Document } from '.';
+import { BaseModel, Document } from '.';
+
+function sha1(str: string): string {
+  const hash = crypto.createHash('sha1');
+  const data = hash.update(str, 'utf8');
+  return data.digest('hex');
+}
 
 export interface LeafType {
   text: string;
@@ -28,13 +34,9 @@ export interface BlockType {
   children: Array<BlockType | LeafType>;
 }
 
-export class DocumentVersion extends Model {
+export class DocumentVersion extends BaseModel {
   static get tableName(): string {
     return 'document_versions';
-  }
-
-  static get columnNameMappers(): ColumnNameMappers {
-    return snakeCaseMappers();
   }
 
   static get relationMappings(): RelationMappings {
@@ -79,19 +81,17 @@ export class DocumentVersion extends Model {
     return this.data.map((b) => serialize(b)).join('');
   }
 
-  id: string;
   sha: string;
   data: BlockType[];
   documentId: string;
-  createdAt: Date;
-  updatedAt: Date;
 
-  $beforeInsert(): void {
+  $beforeInsert(context: QueryContext): void {
+    super.$beforeInsert(context);
     this.sha = sha1(JSON.stringify(this.data));
   }
 
-  $beforeUpdate(): void {
-    this.updatedAt = new Date();
+  $beforeUpdate(opt: ModelOptions, context: QueryContext): void {
+    super.$beforeUpdate(opt, context);
     this.sha = sha1(JSON.stringify(this.data));
   }
 
@@ -122,10 +122,4 @@ export class DocumentVersion extends Model {
       relationships,
     };
   }
-}
-
-function sha1(str: string): string {
-  const hash = crypto.createHash('sha1');
-  const data = hash.update(str, 'utf8');
-  return data.digest('hex');
 }

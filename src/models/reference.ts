@@ -1,22 +1,12 @@
-import {
-  Model,
-  snakeCaseMappers,
-  ColumnNameMappers,
-  JSONSchema,
-  RelationMappings,
-} from 'objection';
+import { Model, JSONSchema, RelationMappings } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 
-import { Document } from '.';
+import { BaseModel, Document } from '.';
 import { Item } from '../lib/zotero';
 
-export class Reference extends Model {
+export class Reference extends BaseModel {
   static get tableName(): string {
     return 'references';
-  }
-
-  static get columnNameMappers(): ColumnNameMappers {
-    return snakeCaseMappers();
   }
 
   static get relationMappings(): RelationMappings {
@@ -48,14 +38,7 @@ export class Reference extends Model {
     },
   };
 
-  id: string;
   data: Item;
-  createdAt: Date;
-  updatedAt: Date;
-
-  $beforeUpdate(): void {
-    this.updatedAt = new Date();
-  }
 
   $toJsonApi(fields?: string[]): OrbitRecord {
     const { id, createdAt, updatedAt } = this;

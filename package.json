@@ -39,6 +39,7 @@
     "node-htmldiff": "^0.9.3",
     "nodejs-sh": "^0.2.0",
     "objection": "^2.2.1",
+    "objection-db-errors": "^1.1.2",
     "pg": "^8.3.0",
     "qs": "^6.9.4",
     "remark-slate": "^1.1.1"

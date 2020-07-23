@@ -1,22 +1,12 @@
-import {
-  Model,
-  RelationMappings,
-  snakeCaseMappers,
-  ColumnNameMappers,
-  JSONSchema,
-} from 'objection';
+import { Model, RelationMappings, JSONSchema, Modifiers } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
 
-import { Reference, DocumentVersion, BlockType } from '.';
+import { BaseModel, Reference, DocumentVersion, BlockType } from '.';
 
-export class Document extends Model {
+export class Document extends BaseModel {
   static get tableName(): string {
     return 'documents';
-  }
-
-  static get columnNameMappers(): ColumnNameMappers {
-    return snakeCaseMappers();
   }
 
   static get relationMappings(): RelationMappings {
@@ -70,17 +60,9 @@ export class Document extends Model {
     return this.versions[0].markdown;
   }
 
-  id: string;
   title: string;
-  createdAt: Date;
-  updatedAt: Date;
-
   versions: DocumentVersion[];
   references: Reference[];
-
-  $beforeUpdate(): void {
-    this.updatedAt = new Date();
-  }
 
   async $patchDocumentVersion(
     data: BlockType[],
