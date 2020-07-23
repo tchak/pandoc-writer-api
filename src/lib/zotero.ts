@@ -1,5 +1,8 @@
 import fetch from 'node-fetch';
 
+const SERVER_HOST = process.env.TRANSLATION_SERVER_HOST;
+const SERVER_SECRET_KEY = process.env.TRANSLATION_SERVER_SECRET_KEY;
+
 export interface Item {
   id: string;
   type: string;
@@ -16,9 +19,10 @@ export async function searchByIdentifier(identifier: string): Promise<Item[]> {
 }
 
 export function zoteroWeb(url: string): Promise<unknown> {
-  return fetch('https://zotero-translation-server.herokuapp.com/web', {
+  return fetch(`${SERVER_HOST}/web`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${SERVER_SECRET_KEY}`,
       'content-type': 'text/plain',
     },
     body: url,
@@ -26,9 +30,10 @@ export function zoteroWeb(url: string): Promise<unknown> {
 }
 
 export function zoteroSearch(identifier: string): Promise<unknown> {
-  return fetch('https://zotero-translation-server.herokuapp.com/search', {
+  return fetch(`${SERVER_HOST}/search`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${SERVER_SECRET_KEY}`,
       'content-type': 'text/plain',
     },
     body: identifier,
@@ -39,16 +44,14 @@ export function zoteroExport(
   zoteroItems: unknown,
   format: string
 ): Promise<Item[]> {
-  return fetch(
-    `https://zotero-translation-server.herokuapp.com/export?format=${format}`,
-    {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(zoteroItems),
-    }
-  )
+  return fetch(`${SERVER_HOST}/export?format=${format}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${SERVER_SECRET_KEY}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(zoteroItems),
+  })
     .then((response) => response.json())
     .then((items) => items as Item[]);
 }

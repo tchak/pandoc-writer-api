@@ -7,9 +7,10 @@ import {
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 
-import Document from './document';
+import { Document } from '.';
+import { Item } from '../lib/zotero';
 
-export default class Reference extends Model {
+export class Reference extends Model {
   static get tableName(): string {
     return 'references';
   }
@@ -48,9 +49,13 @@ export default class Reference extends Model {
   };
 
   id: string;
+  data: Item;
   createdAt: Date;
   updatedAt: Date;
-  data: unknown;
+
+  $beforeUpdate(): void {
+    this.updatedAt = new Date();
+  }
 
   $toJsonApi(fields?: string[]): OrbitRecord {
     const { id, createdAt, updatedAt } = this;

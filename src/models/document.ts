@@ -3,13 +3,14 @@ import {
   RelationMappings,
   snakeCaseMappers,
   ColumnNameMappers,
+  JSONSchema,
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
+import { DateTime } from 'luxon';
 
-import Change from './change';
-import Reference from './reference';
+import { Reference, DocumentVersion, BlockType } from '.';
 
-export default class Document extends Model {
+export class Document extends Model {
   static get tableName(): string {
     return 'documents';
   }
@@ -20,12 +21,12 @@ export default class Document extends Model {
 
   static get relationMappings(): RelationMappings {
     return {
-      changes: {
+      versions: {
         relation: Model.HasManyRelation,
-        modelClass: Change,
+        modelClass: DocumentVersion,
         join: {
           from: 'documents.id',
-          to: 'changes.document_id',
+          to: 'document_versions.document_id',
         },
       },
       references: {
@@ -43,46 +44,90 @@ export default class Document extends Model {
     };
   }
 
-  static jsonSchema = {
+  static jsonSchema: JSONSchema = {
     type: 'object',
-    required: ['title', 'etag'],
+    required: ['title'],
 
     properties: {
       id: { type: 'string' },
-      etag: { type: 'string' },
       title: { type: 'string', minLength: 1 },
-      body: { type: 'string' },
       createdAt: { type: 'string' },
       updatedAt: { type: 'string' },
     },
   };
 
+  static virtualAttributes: string[] = ['sha', 'data'];
+
+  get sha(): string {
+    return this.versions[0].sha;
+  }
+
+  get data(): BlockType[] {
+    return this.versions[0].data;
+  }
+
+  get markdown(): string {
+    return this.versions[0].markdown;
+  }
+
   id: string;
-  etag: string;
   title: string;
-  body: string;
   createdAt: Date;
   updatedAt: Date;
 
-  changes: Change[];
+  versions: DocumentVersion[];
+  references: Reference[];
 
   $beforeUpdate(): void {
     this.updatedAt = new Date();
   }
 
-  $toJsonApi(): OrbitRecord {
-    const { id, title, etag, body, createdAt, updatedAt } = this;
+  async $patchDocumentVersion(
+    data: BlockType[],
+    etag: string
+  ): Promise<DocumentVersion> {
+    const query = this.$relatedQuery<DocumentVersion>('versions');
+    const {
+      versions: [lastVersion],
+    } = this;
+    const { updatedAt, sha } = lastVersion;
+
+    if (sha !== etag) {
+      throw new Error('Conflict');
+    }
+
+    const diffInHours = DateTime.utc().diff(
+      DateTime.fromJSDate(updatedAt),
+      'hours'
+    );
+
+    if (diffInHours.hours > 48) {
+      return query.insert({
+        data,
+      });
+    } else {
+      await lastVersion.$query().patch({ data });
+      return lastVersion;
+    }
+  }
+
+  $toJsonApi(fields?: string[]): OrbitRecord {
+    const { id, title, createdAt, updatedAt } = this;
+
+    const attributes = {
+      title,
+      'created-at': createdAt,
+      'updated-at': updatedAt,
+    };
+
+    if (fields && fields.includes('data')) {
+      attributes['data'] = this.data;
+    }
 
     return {
       id,
       type: 'documents',
-      attributes: {
-        title,
-        body,
-        etag,
-        'created-at': createdAt,
-        'updated-at': updatedAt,
-      },
+      attributes,
     };
   }
 }

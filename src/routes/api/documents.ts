@@ -2,12 +2,11 @@ import {
   FastifyInstance,
   RequestGenericInterface,
   FastifyReply,
+  FastifyRequest,
 } from 'fastify';
 import { Record as OrbitRecord } from '@orbit/data';
-import { uuid } from '@orbit/utils';
 
-import Document from '../../models/document';
-import Reference from '../../models/reference';
+import { Document, Reference, DocumentVersion, BlockType } from '../../models';
 import { normalise } from '../../lib/pandiff';
 
 interface CreateDocumentRequest extends RequestGenericInterface {
@@ -20,8 +19,24 @@ interface UpdateDocumentRequest extends RequestGenericInterface {
   Params: {
     id: string;
   };
+  Headers: {
+    'if-match': string;
+  };
   Body: {
     data: OrbitRecord;
+  };
+}
+
+interface DestroyDocumentRequest extends RequestGenericInterface {
+  Params: {
+    id: string;
+  };
+}
+
+interface GetDocumentsRequest extends RequestGenericInterface {
+  Querystring: {
+    order?: 'created_at' | 'updated_at';
+    filter?: string[];
   };
 }
 
@@ -29,11 +44,17 @@ interface GetDocumentRequest extends RequestGenericInterface {
   Params: {
     id: string;
   };
+  Querystring: {
+    fields?: string[];
+  };
 }
 
-interface DestroyDocumentRequest extends RequestGenericInterface {
+interface GetDocumentVersionsRequest extends RequestGenericInterface {
   Params: {
     id: string;
+  };
+  Querystring: {
+    fields?: string[];
   };
 }
 
@@ -46,83 +67,51 @@ interface GetDocumentReferencesRequest extends RequestGenericInterface {
   };
 }
 
-const CONTENT_TYPE = [
-  'json',
-  'html',
-  'pdf',
-  'docx',
-  'application/vnd.api+json',
-];
-
 export default async function (fastify: FastifyInstance): Promise<void> {
   fastify.post<CreateDocumentRequest>('/documents', async function (
     request,
     reply
   ) {
-    const document = await Document.query().insert({
-      id: uuid(),
+    const document = await Document.query().insertGraphAndFetch({
       title: request.body.data.attributes.title,
-      body: '',
-      etag: uuid(),
+      versions: [
+        {
+          data: [],
+        },
+      ],
     });
 
+    reply.header('etag', document.sha);
     reply.status(201);
     return { data: document.$toJsonApi() };
-  });
-
-  fastify.get('/documents', async function (request) {
-    const query = Document.query();
-    const documents = await query;
-
-    return { data: documents.map((document) => document.$toJsonApi()) };
-  });
-
-  for (const format of ['html', 'docx', 'pdf']) {
-    fastify.get<GetDocumentRequest>(
-      `/documents/:id/file.${format}`,
-      async function (request, reply) {
-        const query = Document.query();
-        const document = await query.findById(request.params.id);
-
-        return renderDocument(document, format, reply);
-      }
-    );
-  }
-
-  fastify.get<GetDocumentRequest>('/documents/:id', async function (
-    request,
-    reply
-  ) {
-    const query = Document.query();
-    const document = await query.findById(request.params.id);
-
-    switch (request.accepts().type(CONTENT_TYPE)) {
-      case 'json':
-      case 'application/vnd.api+json':
-        reply.type('application/vnd.api+json');
-        return { data: document.$toJsonApi() };
-      case 'html':
-        return renderDocument(document, 'html', reply);
-      case 'pdf':
-        return renderDocument(document, 'pdf', reply);
-      case 'docx':
-        return renderDocument(document, 'docx', reply);
-      default:
-        reply.notAcceptable();
-        break;
-    }
   });
 
   fastify.patch<UpdateDocumentRequest>('/documents/:id', async function (
     request,
     reply
   ) {
-    const query = Document.query();
+    const { title, data } = request.body.data.attributes as {
+      title: string;
+      data: BlockType[];
+    };
+    const etag = request.headers['if-match'];
 
-    await query
-      .findById(request.params.id)
-      .patch({ title: request.body.data.attributes.title });
+    const query = Document.query().findById(request.params.id);
+    const document = await query.withGraphFetched('versions(last)');
 
+    if (title) {
+      await query.patch({ title });
+    }
+
+    if (data) {
+      try {
+        await document.$patchDocumentVersion(data, etag);
+      } catch {
+        reply.preconditionFailed();
+      }
+    }
+
+    reply.header('etag', document.sha);
     reply.status(204);
   });
 
@@ -137,20 +126,103 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     reply.status(204);
   });
 
+  fastify.get<GetDocumentsRequest>('/documents', async function (request) {
+    const {
+      query: { order = 'created_at' },
+    } = request;
+    const query = Document.query().orderBy(order);
+    const documents = await query;
+
+    return { data: documents.map((document) => document.$toJsonApi()) };
+  });
+
+  fastify.get<GetDocumentRequest>('/documents/:id', async function (
+    request,
+    reply
+  ) {
+    const {
+      params: { id: idWithFormat },
+      query: { fields },
+    } = request;
+    const [id, format] = idWithFormat.split('.');
+    const query = Document.query()
+      .findById(id)
+      .withGraphFetched('versions(last)');
+    const document = await query;
+
+    switch (accepts(request, format)) {
+      case 'json':
+        reply.header('etag', document.sha);
+        reply.type('application/vnd.api+json');
+        return { data: document.$toJsonApi(fields) };
+      case 'markdown':
+      case 'md':
+        return renderDocument(document, 'md', reply);
+      case 'html':
+        return renderDocument(document, 'html', reply);
+      case 'pdf':
+        return renderDocument(document, 'pdf', reply);
+      case 'docx':
+        return renderDocument(document, 'docx', reply);
+      default:
+        reply.notAcceptable();
+        break;
+    }
+  });
+
+  fastify.get<GetDocumentVersionsRequest>(
+    '/documents/:id/versions',
+    async function (request) {
+      const {
+        params: { id },
+        query: { fields },
+      } = request;
+      const document = await Document.query().findById(id);
+      const query = document.$relatedQuery<DocumentVersion>('versions');
+      const versions = await query;
+
+      return {
+        data: versions.map((version) => version.$toJsonApi(fields)),
+      };
+    }
+  );
+
   fastify.get<GetDocumentReferencesRequest>(
     '/documents/:id/references',
     async function (request) {
-      const document = await Document.query().findById(request.params.id);
+      const {
+        params: { id },
+        query: { fields },
+      } = request;
+      const document = await Document.query().findById(id);
       const query = document.$relatedQuery<Reference>('references');
       const references = await query;
 
       return {
-        data: references.map((reference) =>
-          reference.$toJsonApi(request.query.fields)
-        ),
+        data: references.map((reference) => reference.$toJsonApi(fields)),
       };
     }
   );
+}
+
+const ACCEPTS = [
+  'json',
+  'html',
+  'markdown',
+  'pdf',
+  'docx',
+  'application/vnd.api+json',
+];
+
+function accepts(
+  request: FastifyRequest<GetDocumentRequest>,
+  format?: string
+): string {
+  format = format || request.accepts().type(ACCEPTS);
+  if (format === 'application/vnd.api+json') {
+    return 'json';
+  }
+  return format;
 }
 
 async function renderDocument(
@@ -159,19 +231,19 @@ async function renderDocument(
   reply: FastifyReply
 ): Promise<string> {
   switch (format) {
+    case 'md':
+      reply.type('text/markdown');
+      return document.markdown;
     case 'html':
       reply.type('text/html');
-      return normalise(document.body, { to: 'html' });
+      return normalise(document.markdown, { to: 'html' });
     case 'docx':
       reply.type(
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       );
-      return normalise(document.body, { to: 'docx' });
+      return normalise(document.markdown, { to: 'docx' });
     case 'pdf':
       reply.type('application/pdf');
-      return normalise(document.body, { to: 'pdf' });
-    case 'markdown':
-      reply.type('application/markdown');
-      return normalise(document.body);
+      return normalise(document.markdown, { to: 'pdf' });
   }
 }

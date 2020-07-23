@@ -34,16 +34,19 @@
     "fastify-sensible": "^3.0.1",
     "jsdom": "^16.3.0",
     "knex": "^0.21.2",
+    "luxon": "^1.24.1",
     "node-fetch": "^3.0.0-beta.7",
     "node-htmldiff": "^0.9.3",
     "nodejs-sh": "^0.2.0",
     "objection": "^2.2.1",
     "pg": "^8.3.0",
-    "qs": "^6.9.4"
+    "qs": "^6.9.4",
+    "remark-slate": "^1.1.1"
   },
   "devDependencies": {
     "@types/diff-match-patch": "^1.0.32",
     "@types/jsdom": "^16.2.3",
+    "@types/luxon": "^1.24.2",
     "@types/node": "^14.0.18",
     "@types/qs": "^6.9.3",
     "@types/tap": "^14.10.0",

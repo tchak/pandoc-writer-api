@@ -1,13 +1,18 @@
 import { FastifyInstance, RequestGenericInterface } from 'fastify';
 import { Record as OrbitRecord } from '@orbit/data';
-import { uuid } from '@orbit/utils';
 
 import { searchByURL, searchByIdentifier, Item } from '../../lib/zotero';
-import Reference from '../../models/reference';
+import { Reference } from '../../models';
 
 interface CreateReferenceRequest extends RequestGenericInterface {
   Body: {
     data: OrbitRecord;
+  };
+}
+
+interface DestroyReferenceRequest extends RequestGenericInterface {
+  Params: {
+    id: string;
   };
 }
 
@@ -33,12 +38,6 @@ interface GetReferenceRequest extends RequestGenericInterface {
   };
 }
 
-interface DestroyReferenceRequest extends RequestGenericInterface {
-  Params: {
-    id: string;
-  };
-}
-
 export default async function (fastify: FastifyInstance): Promise<void> {
   fastify.post<CreateReferenceRequest>('/references', async function (
     request,
@@ -46,7 +45,6 @@ export default async function (fastify: FastifyInstance): Promise<void> {
   ) {
     const { data } = request.body.data.attributes;
     const reference = await Reference.query().insert({
-      id: uuid(),
       data,
     });
 
@@ -68,11 +66,11 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     }
 
     const references = await Reference.query().insert(
-      items.map((data) => ({ id: uuid(), data }))
+      items.map((data) => ({ data }))
     );
 
     reply.status(201);
-    return { data: references.map(({ id }) => id) };
+    return { ids: references.map(({ id }) => id) };
   });
 
   fastify.get<GetReferencesRequest>('/references', async function (request) {
@@ -97,8 +95,8 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const query = Reference.query();
-    await query.findById(request.params.id).del();
+    const query = Reference.query().findById(request.params.id);
+    await query.del();
 
     reply.status(204);
   });
