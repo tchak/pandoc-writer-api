@@ -7,31 +7,15 @@ import {
   QueryContext,
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
-import { serialize } from 'remark-slate';
 import crypto from 'crypto';
 
+import { BlockType, serialize } from '../lib/mdast-slate';
 import { BaseModel, Document } from '.';
 
 function sha1(str: string): string {
   const hash = crypto.createHash('sha1');
   const data = hash.update(str, 'utf8');
   return data.digest('hex');
-}
-
-export interface LeafType {
-  text: string;
-  strikeThrough?: boolean;
-  bold?: boolean;
-  italic?: boolean;
-  parentType?: string;
-}
-
-export interface BlockType {
-  type: string;
-  parentType?: string;
-  link?: string;
-  break?: boolean;
-  children: Array<BlockType | LeafType>;
 }
 
 export class DocumentVersion extends BaseModel {

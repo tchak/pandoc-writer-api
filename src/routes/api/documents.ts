@@ -6,8 +6,9 @@ import {
 } from 'fastify';
 import { Record as OrbitRecord } from '@orbit/data';
 
-import { Document, Reference, DocumentVersion, BlockType } from '../../models';
+import { Document, Reference, DocumentVersion } from '../../models';
 import { normalise } from '../../lib/pandiff';
+import { BlockType } from '../../lib/mdast-slate';
 
 interface CreateDocumentRequest extends RequestGenericInterface {
   Body: {

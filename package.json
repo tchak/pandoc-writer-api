@@ -24,6 +24,7 @@
   "dependencies": {
     "@orbit/data": "^0.17.0-beta.3",
     "diff-match-patch": "^1.0.5",
+    "escape-html": "^1.0.3",
     "fastify": "^3.1.1",
     "fastify-accepts": "^2.0.1",
     "fastify-autoload": "^3.0.5",
@@ -42,7 +43,9 @@
     "objection-db-errors": "^1.1.2",
     "pg": "^8.3.0",
     "qs": "^6.9.4",
-    "remark-slate": "^1.1.1"
+    "remark-footnotes": "^1.0.0",
+    "remark-parse": "^8.0.3",
+    "unified": "^9.1.0"
   },
   "devDependencies": {
     "@types/diff-match-patch": "^1.0.32",

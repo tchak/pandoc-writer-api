@@ -2,7 +2,8 @@ import { Model, RelationMappings, JSONSchema } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
 
-import { BaseModel, Reference, DocumentVersion, BlockType } from '.';
+import { BlockType } from '../lib/mdast-slate';
+import { BaseModel, Reference, DocumentVersion } from '.';
 
 export class Document extends BaseModel {
   static get tableName(): string {
