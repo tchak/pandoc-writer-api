@@ -68,10 +68,11 @@ export class Document extends BaseModel {
   }
 
   title: string;
+  meta: Record<string, string>;
   versions: DocumentVersion[];
   references: Reference[];
 
-  async $patchDocumentVersion(
+  async patchDocumentVersion(
     data: BlockType[],
     etag: string
   ): Promise<DocumentVersion> {
@@ -81,7 +82,7 @@ export class Document extends BaseModel {
     const { updatedAt, sha } = lastVersion;
 
     if (sha !== etag) {
-      throw new Error('Conflict');
+      throw new Error('PreconditionFailed');
     }
 
     const diffInHours = DateTime.utc().diff(
@@ -110,6 +111,9 @@ export class Document extends BaseModel {
 
     if (fields && fields.includes('data')) {
       attributes['data'] = this.data;
+    }
+    if (fields && fields.includes('meta')) {
+      attributes['meta'] = this.meta;
     }
 
     return {

@@ -85,7 +85,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
   });
 
   fastify.get<GetReferenceRequest>('/references/:id', async function (request) {
-    const query = Reference.query();
+    const query = Reference.query().throwIfNotFound();
     const reference = await query.findById(request.params.id);
 
     return { data: reference.$toJsonApi(request.query.fields) };
@@ -95,7 +95,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const query = Reference.query().findById(request.params.id);
+    const query = Reference.query()
+      .throwIfNotFound()
+      .findById(request.params.id);
     await query.del();
 
     reply.status(204);

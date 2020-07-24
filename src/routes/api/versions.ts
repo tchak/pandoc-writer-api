@@ -23,7 +23,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       params: { id },
       query: { fields },
     } = request;
-    const query = DocumentVersion.query().findById(id);
+    const query = DocumentVersion.query().throwIfNotFound().findById(id);
     const version = await query;
 
     return { data: version.$toJsonApi(fields) };
@@ -36,7 +36,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const {
       params: { id },
     } = request;
-    const query = DocumentVersion.query().findById(id);
+    const query = DocumentVersion.query().throwIfNotFound().findById(id);
     await query.del();
 
     reply.status(204);

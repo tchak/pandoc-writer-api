@@ -91,38 +91,46 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const { title, data } = request.body.data.attributes as {
+    const { title, meta, data } = request.body.data.attributes as {
       title: string;
+      meta: Record<string, string>;
       data: BlockType[];
     };
     const etag = request.headers['if-match'];
 
-    const query = Document.query().findById(request.params.id);
-    const document = await query.withGraphFetched('versions(last)');
+    await Document.transaction(async (trx) => {
+      const query = Document.query(trx)
+        .throwIfNotFound()
+        .findById(request.params.id);
+      const document = await query.withGraphFetched('versions(last)');
 
-    if (title) {
-      await query.patch({ title });
-    }
-
-    if (data) {
-      try {
-        await document.$patchDocumentVersion(data, etag);
-      } catch {
-        reply.preconditionFailed();
+      if (title) {
+        await query.patch({ title });
       }
-    }
 
-    reply.header('etag', document.sha);
-    reply.status(204);
+      if (meta) {
+        await query.patch({
+          meta: mapKeys(meta, (key) => `meta:${key}`),
+        });
+      }
+
+      if (data) {
+        await document.patchDocumentVersion(data, etag);
+      }
+
+      reply.header('etag', document.sha);
+      reply.status(204);
+    });
   });
 
   fastify.delete<DestroyDocumentRequest>('/documents/:id', async function (
     request,
     reply
   ) {
-    const query = Document.query();
-
-    await query.findById(request.params.id).del();
+    const query = Document.query()
+      .throwIfNotFound()
+      .findById(request.params.id);
+    await query.del();
 
     reply.status(204);
   });
@@ -147,6 +155,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     } = request;
     const [id, format] = idWithFormat.split('.');
     const query = Document.query()
+      .throwIfNotFound()
       .findById(id)
       .withGraphFetched('versions(last)');
     const document = await query;
@@ -178,7 +187,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         params: { id },
         query: { fields },
       } = request;
-      const document = await Document.query().findById(id);
+      const document = await Document.query().throwIfNotFound().findById(id);
       const query = document.$relatedQuery<DocumentVersion>('versions');
       const versions = await query;
 
@@ -195,7 +204,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         params: { id },
         query: { fields },
       } = request;
-      const document = await Document.query().findById(id);
+      const document = await Document.query().throwIfNotFound().findById(id);
       const query = document.$relatedQuery<Reference>('references');
       const references = await query;
 
@@ -247,4 +256,13 @@ async function renderDocument(
       reply.type('application/pdf');
       return normalise(document.markdown, { to: 'pdf' });
   }
+}
+
+function mapKeys<T>(
+  obj: Record<string, T>,
+  callback: (key: string) => string
+): Record<string, T> {
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [callback(key), value])
+  );
 }

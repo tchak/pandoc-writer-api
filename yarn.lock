@@ -253,6 +253,13 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
+"@koalition/error-handler@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@koalition/error-handler/-/error-handler-0.1.1.tgz#f1d8330e86d31cc95e591f885ccd79ea79c9e0c1"
+  integrity sha512-WEbcf4ElHSA4jS/V1M1kXgQMyF2/pFFAmITpsProK5GF/VICmo3HsF20EPra0CvDxPFTo3r/xC/vvkPI95CWcQ==
+  dependencies:
+    objection "^2.1.3"
+
 "@orbit/core@^0.17.0-beta.3":
   version "0.17.0-beta.3"
   resolved "https://registry.yarnpkg.com/@orbit/core/-/core-0.17.0-beta.3.tgz#426b382b32f5a95f932ac83e718ccc796200e338"
@@ -3556,7 +3563,7 @@ objection-db-errors@^1.1.2:
   dependencies:
     db-errors "^0.2.1"
 
-objection@^2.2.1:
+objection@^2.1.3, objection@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/objection/-/objection-2.2.1.tgz#d0d4ae91bf97c89301d1390bf76c8bf4ab237e56"
   integrity sha512-VY/OGLlLpHwIHck9/HC9meSpjE9w2b4ufxDu/igVCowyDajmcU3AwRmaqKQP8MhMCLPZKSj8gqIAQ5m5zpV5YA==
@@ -4413,7 +4420,7 @@ remark-message-control@^6.0.0:
     mdast-comment-marker "^1.0.0"
     unified-message-control "^3.0.0"
 
-remark-parse@^8.0.0, remark-parse@^8.0.3:
+remark-parse@^8.0.0:
   version "8.0.3"
   resolved "https://registry.yarnpkg.com/remark-parse/-/remark-parse-8.0.3.tgz#9c62aa3b35b79a486454c690472906075f40c7e1"
   integrity sha512-E1K9+QLGgggHxCQtLt++uXltxEprmWzNfg+MxpfHsZlrddKzZ/hZyWHDbK3/Ap8HJQqYJRXP+jHczdL6q6i85Q==
@@ -5553,7 +5560,7 @@ unified-message-control@^3.0.0:
     unist-util-visit "^2.0.0"
     vfile-location "^3.0.0"
 
-unified@^9.0.0, unified@^9.1.0:
+unified@^9.0.0:
   version "9.1.0"
   resolved "https://registry.yarnpkg.com/unified/-/unified-9.1.0.tgz#7ba82e5db4740c47a04e688a9ca8335980547410"
   integrity sha512-VXOv7Ic6twsKGJDeZQ2wwPqXs2hM0KNu5Hkg9WgAZbSD1pxhZ7p8swqg583nw1Je2fhwHy6U8aEjiI79x1gvag==
@@ -5720,11 +5727,6 @@ vfile-message@^2.0.0:
   dependencies:
     "@types/unist" "^2.0.0"
     unist-util-stringify-position "^2.0.0"
-
-vfile-reporter-json@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/vfile-reporter-json/-/vfile-reporter-json-2.0.1.tgz#f131f7888411bb324735d94cc211e5f976bd5d2d"
-  integrity sha512-4bSoKA6DWear1HIaX0JpQrSHTrsESdYsIVmYkG18pqTcCdWZtwzCOj0pkWFLMi+toUSNK1Af1MmKFA9mV1tCSQ==
 
 vfile-reporter@^6.0.1:
   version "6.0.1"
