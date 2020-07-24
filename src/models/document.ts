@@ -1,8 +1,10 @@
 import { Model, RelationMappings, JSONSchema } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
+import remark from 'remark';
+import footnotes from 'remark-footnotes';
 
-import { BlockType } from '../lib/mdast-slate';
+import reslate, { BlockType } from '../lib/mdast-slate';
 import { BaseModel, Reference, DocumentVersion } from '.';
 
 export class Document extends BaseModel {
@@ -61,6 +63,10 @@ export class Document extends BaseModel {
     return this.versions[0].markdown;
   }
 
+  get report(): string {
+    return this.versions[0].report;
+  }
+
   title: string;
   versions: DocumentVersion[];
   references: Reference[];
@@ -69,7 +75,6 @@ export class Document extends BaseModel {
     data: BlockType[],
     etag: string
   ): Promise<DocumentVersion> {
-    const query = this.$relatedQuery<DocumentVersion>('versions');
     const {
       versions: [lastVersion],
     } = this;
@@ -85,7 +90,7 @@ export class Document extends BaseModel {
     );
 
     if (diffInHours.hours > 48) {
-      return query.insert({
+      return this.$relatedQuery<DocumentVersion>('versions').insert({
         data,
       });
     } else {
@@ -112,5 +117,22 @@ export class Document extends BaseModel {
       type: 'documents',
       attributes,
     };
+  }
+
+  static async import(markdown: string, title?: string): Promise<Document> {
+    const file = await remark()
+      .use(footnotes, { inlineNotes: true })
+      .use(reslate)
+      .process(markdown);
+    const data = file.data as BlockType[];
+
+    return this.query().insertGraphAndFetch({
+      title: title || 'New document',
+      versions: [
+        {
+          data,
+        },
+      ],
+    });
   }
 }

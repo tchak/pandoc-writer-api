@@ -52,7 +52,7 @@ export interface BlockType {
 
 export const defaultNodeTypes = {
   paragraph: 'paragraph',
-  blockquote: 'block-quote',
+  blockquote: 'blockquote',
   code: 'code',
   footnote: 'footnote',
   link: 'link',

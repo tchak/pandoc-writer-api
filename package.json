@@ -43,9 +43,10 @@
     "objection-db-errors": "^1.1.2",
     "pg": "^8.3.0",
     "qs": "^6.9.4",
+    "remark": "^12.0.1",
     "remark-footnotes": "^1.0.0",
-    "remark-parse": "^8.0.3",
-    "unified": "^9.1.0"
+    "remark-preset-lint-recommended": "^4.0.1",
+    "vfile-reporter": "^6.0.1"
   },
   "devDependencies": {
     "@types/diff-match-patch": "^1.0.32",

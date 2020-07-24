@@ -1,6 +1,5 @@
 import { test } from 'tap';
-import unified from 'unified';
-import markdown from 'remark-parse';
+import remark from 'remark';
 import footnotes from 'remark-footnotes';
 
 import plugin from '../../src/lib/mdast-slate';
@@ -133,8 +132,7 @@ const slateAST = [
 ];
 
 test('markdown with footnotes', (t) => {
-  unified()
-    .use(markdown)
+  remark()
     .use(footnotes, { inlineNotes: true })
     .use(plugin)
     .process(mdWithFootnotes, function (err, file) {

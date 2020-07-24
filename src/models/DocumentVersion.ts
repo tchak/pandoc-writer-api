@@ -8,6 +8,9 @@ import {
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import crypto from 'crypto';
+import remark from 'remark';
+import lint from 'remark-preset-lint-recommended';
+import report from 'vfile-reporter';
 
 import { BlockType, serialize } from '../lib/mdast-slate';
 import { BaseModel, Document } from '.';
@@ -63,6 +66,11 @@ export class DocumentVersion extends BaseModel {
 
   get markdown(): string {
     return this.data.map((b) => serialize(b)).join('');
+  }
+
+  get report(): string {
+    const file = remark().use(lint).processSync(this.markdown);
+    return report(file);
   }
 
   sha: string;
