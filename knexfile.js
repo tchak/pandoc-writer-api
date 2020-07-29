@@ -2,7 +2,7 @@ module.exports = {
   development: {
     client: 'postgresql',
     connection: {
-      database: 'pandown_dev',
+      database: 'hora_development',
     },
     pool: {
       min: 2,
@@ -13,7 +13,7 @@ module.exports = {
   test: {
     client: 'postgresql',
     connection: {
-      database: 'pandown_test',
+      database: 'hora_test',
     },
     pool: {
       min: 2,
@@ -24,7 +24,7 @@ module.exports = {
   production: {
     client: 'postgresql',
     connection: {
-      database: 'pandown_prod',
+      database: 'hora_production',
     },
     pool: {
       min: 2,
