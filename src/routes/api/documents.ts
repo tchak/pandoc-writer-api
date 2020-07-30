@@ -7,7 +7,7 @@ import {
 import { Record as OrbitRecord } from '@orbit/data';
 
 import { Document, Reference, DocumentVersion } from '../../models';
-import { normalise } from '../../lib/pandiff';
+import { pandoc } from '../../lib/pandoc';
 import { BlockType } from '../../lib/mdast-slate';
 
 interface CreateDocumentRequest extends RequestGenericInterface {
@@ -246,15 +246,15 @@ async function renderDocument(
       return document.markdown;
     case 'html':
       reply.type('text/html');
-      return normalise(document.markdown, { to: 'html' });
+      return pandoc(document.markdown, { from: 'markdown+smart', to: 'html' });
     case 'docx':
       reply.type(
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       );
-      return normalise(document.markdown, { to: 'docx' });
+      return pandoc(document.markdown, { from: 'markdown+smart', to: 'docx' });
     case 'pdf':
       reply.type('application/pdf');
-      return normalise(document.markdown, { to: 'pdf' });
+      return pandoc(document.markdown, { from: 'markdown+smart', to: 'pdf' });
   }
 }
 

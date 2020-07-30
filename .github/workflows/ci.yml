@@ -39,6 +39,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
 
+    - name: Install pandoc
+      run: sudo dpkg -i https://github.com/jgm/pandoc/releases/download/2.10.1/pandoc-2.10.1-1-amd64.deb
+
     - name: Install
       run: yarn install --frozen-lockfile --non-interactive
 

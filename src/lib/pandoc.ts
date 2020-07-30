@@ -10,6 +10,8 @@ export interface Options {
   threshold?: number;
   output?: string;
   to?: string;
+  from?: string;
+  filter?: string;
   wrap?: number;
   standalone?: boolean;
 }
@@ -184,7 +186,6 @@ async function convert(source: string, opts: Options = {}): Promise<string> {
     'extract-media',
     'filter',
     'from',
-    'lua-filter',
     'resource-path'
   );
   args.push('--html-q-tags', '--mathjax');
@@ -205,29 +206,6 @@ async function convert(source: string, opts: Options = {}): Promise<string> {
       .toString();
   }
   return html;
-}
-
-export default async function pandiff(
-  source1: string,
-  source2: string,
-  opts: Options = {}
-): Promise<string | null> {
-  const html1 = await convert(source1, opts);
-  const html2 = await convert(source2, opts);
-  const html = htmldiff(html1, html2);
-
-  const unmodified = html
-    .replace(/<del.*?del>/g, '')
-    .replace(/<ins.*?ins>/g, '');
-  const similarity = unmodified.length / html.length;
-  if (opts.threshold && similarity < opts.threshold) {
-    console.error(
-      Math.round(100 - 100 * similarity) + '% of the content has changed'
-    );
-    return null;
-  } else {
-    return render(html, opts);
-  }
 }
 
 const markdown = [
@@ -419,12 +397,62 @@ async function postrender(
   }
 }
 
-export function trackChanges(file: string, opts = {}): Promise<string> {
+export async function pandoc(
+  source: string,
+  opts: Options = {}
+): Promise<string | null> {
+  const args = buildArgs(
+    opts,
+    'bibliography',
+    'extract-media',
+    'filter',
+    'from',
+    'resource-path',
+    'output',
+    'pdf-engine',
+    'to'
+  );
+
+  if (opts.output) {
+    await sh.pandoc(...args).end(source);
+    return null;
+  } else {
+    return sh
+      .pandoc(...args)
+      .end(source)
+      .toString();
+  }
+}
+
+export async function pandiff(
+  source1: string,
+  source2: string,
+  opts: Options = {}
+): Promise<string | null> {
+  const html1 = await convert(source1, opts);
+  const html2 = await convert(source2, opts);
+  const html = htmldiff(html1, html2);
+
+  const unmodified = html
+    .replace(/<del.*?del>/g, '')
+    .replace(/<ins.*?ins>/g, '');
+  const similarity = unmodified.length / html.length;
+  if (opts.threshold && similarity < opts.threshold) {
+    console.error(
+      Math.round(100 - 100 * similarity) + '% of the content has changed'
+    );
+    return null;
+  } else {
+    return render(html, opts);
+  }
+}
+
+export async function trackChanges(file: string, opts = {}): Promise<string> {
   return sh
     .pandoc(file, '--track-changes=all')
     .toString()
     .then((html) => render(html, opts));
 }
-export function normalise(text: string, opts = {}): Promise<string> {
+export async function normalise(text: string, opts = {}): Promise<string> {
   return pandiff(criticReject(text), criticAccept(text), opts);
 }
