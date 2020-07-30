@@ -8,9 +8,9 @@ jobs:
       postgres:
         image: postgres:12
         env:
+          POSTGRES_DB: hora_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
         ports:
         - 5432/tcp
         # needed because the postgres container does not provide a healthcheck
@@ -48,13 +48,15 @@ jobs:
     - name: Lint
       run: yarn lint
 
+    - name: Migrate DB
+      run: yarn migrate --env test
+
     - name: Test
       run: yarn test
       env:
         NODE_ENV: test
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
-        POSTGRES_TEST_DB: test_db
         POSTGRES_HOST: localhost
         POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
         REDIS_HOST: localhost
