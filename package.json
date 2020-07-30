@@ -22,6 +22,7 @@
   "dependencies": {
     "@koalition/error-handler": "^0.1.1",
     "@orbit/data": "^0.17.0-beta.4",
+    "aws-sdk": "^2.723.0",
     "diff-match-patch": "^1.0.5",
     "escape-html": "^1.0.3",
     "fastify": "^3.1.1",
