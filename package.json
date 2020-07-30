@@ -13,14 +13,12 @@
     "build:ts": "tsc",
     "lint": "eslint . --ext .ts",
     "dev": "tsc && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\"  \"tsc -w\" \"fastify start -w -l info -P dist/app.js\"",
-    "migrate": "knex migrate:latest",
-    "migrate:rollback": "knex migrate:rollback --all",
-    "migrate:rollback:all": "yarn migrate:rollback && yarn migrate:rollback --env test",
-    "migrate:reset": "yarn migrate:rollback:all && yarn migrate --env test && yarn migrate"
+    "db:migrate": "knex migrate:latest",
+    "db:rollback": "knex migrate:rollback"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@koalition/error-handler": "^0.1.1",
     "@orbit/data": "^0.17.0-beta.4",

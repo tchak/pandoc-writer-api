@@ -1,9 +1,10 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('dotenv').config();
+
 module.exports = {
   development: {
-    client: 'postgresql',
-    connection: {
-      database: 'hora_development',
-    },
+    client: 'pg',
+    connection: process.env.DATABASE_URL,
     pool: {
       min: 2,
       max: 10,
@@ -11,9 +12,9 @@ module.exports = {
   },
 
   test: {
-    client: 'postgresql',
+    client: 'pg',
     connection: {
-      database: 'hora_test',
+      database: process.env.POSTGRES_DB,
       ...(process.env.POSTGRES_HOST
         ? { host: process.env.POSTGRES_HOST }
         : undefined),
@@ -34,7 +35,7 @@ module.exports = {
   },
 
   production: {
-    client: 'postgresql',
+    client: 'pg',
     connection: process.env.DATABASE_URL,
     pool: {
       min: 2,
