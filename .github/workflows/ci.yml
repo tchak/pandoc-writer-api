@@ -40,7 +40,9 @@ jobs:
           ${{ runner.os }}-yarn-
 
     - name: Install pandoc
-      run: curl -sLO https://github.com/jgm/pandoc/releases/download/2.10.1/pandoc-2.10.1-1-amd64.deb || sudo dpkg -i pandoc-2.10.1-1-amd64.deb
+      run: |
+        curl -sLO https://github.com/jgm/pandoc/releases/download/2.10.1/pandoc-2.10.1-1-amd64.deb
+        sudo dpkg -i pandoc-2.10.1-1-amd64.deb
 
     - name: Install
       run: yarn install --frozen-lockfile --non-interactive
@@ -48,17 +50,10 @@ jobs:
     - name: Lint
       run: yarn lint
 
-    - name: Migrate DB
-      run: yarn migrate --env test
-      env:
-        NODE_ENV: test
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_HOST: localhost
-        POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
-
     - name: Test
-      run: yarn test
+      run: |
+        yarn migrate --env test
+        yarn test
       env:
         NODE_ENV: test
         POSTGRES_USER: postgres
