@@ -8,15 +8,17 @@ import accepts from 'fastify-accepts';
 import sensible from 'fastify-sensible';
 import jwt from 'fastify-jwt';
 import auth from 'fastify-auth';
+import rateLimit from 'fastify-rate-limit';
 
 export default async function (
   fastify: FastifyInstance,
   opts: unknown
 ): Promise<void> {
   // Place here your custom code!
+  fastify.register(helmet);
   fastify.register(cors);
   fastify.register(favicon);
-  fastify.register(helmet);
+  fastify.register(rateLimit);
   fastify.register(accepts);
   fastify.register(sensible);
   fastify.register(jwt, { secret: process.env.AUTH_SECRET });
