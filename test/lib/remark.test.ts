@@ -137,7 +137,7 @@ test('markdown with footnotes', (t) => {
     .use(plugin)
     .process(mdWithFootnotes, function (err, file) {
       if (err) throw err;
-      t.deepEqual(file.data, slateAST);
+      t.deepEqual(file.data, slateAST, 'should produce slate AST');
       t.done();
     });
 });

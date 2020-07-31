@@ -24,11 +24,15 @@ test('get references', async (t) => {
       authorization: `Bearer ${token}`,
     }
   );
-  t.equal(res.status, 201);
+  t.equal(res.status, 201, 'POST /references should succeed with status 201');
 
   res = await request(app, '/v1/references', undefined, undefined, {
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.status, 200);
-  t.equal((res.body as any).data.length, 1);
+  t.equal(res.status, 200, 'GET /references should succeed with status 200');
+  t.equal(
+    (res.body as any).data.length,
+    1,
+    'GET /references should return 1 result'
+  );
 });
