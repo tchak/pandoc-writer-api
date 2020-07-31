@@ -4,7 +4,7 @@ import {
   FastifyReply,
   FastifyRequest,
 } from 'fastify';
-import { Record as OrbitRecord } from '@orbit/data';
+import { Record as OrbitRecord, RecordIdentity } from '@orbit/data';
 
 import {
   User,
@@ -53,6 +53,24 @@ interface GetDocumentRequest extends RequestGenericInterface {
   };
   Querystring: {
     fields?: string[];
+  };
+}
+
+interface AddDocumentReferencesRequest extends RequestGenericInterface {
+  Params: {
+    id: string;
+  };
+  Body: {
+    data: RecordIdentity[];
+  };
+}
+
+interface RemoveDocumentReferencesRequest extends RequestGenericInterface {
+  Params: {
+    id: string;
+  };
+  Body: {
+    data: RecordIdentity[];
   };
 }
 
@@ -205,6 +223,54 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         break;
     }
   });
+
+  fastify.post<AddDocumentReferencesRequest>(
+    '/documents/:id/relationships/references',
+    async function (request, reply) {
+      const {
+        params: { id },
+        body: { data },
+      } = request;
+      const ids = data.map(({ id }) => id);
+      const user = await User.findByToken(request.user as UserToken);
+      const document = await user
+        .$relatedQuery<Document>('documents')
+        .modify('kept')
+        .findById(id);
+      const references = await user
+        .$relatedQuery<Reference>('references')
+        .modify('kept')
+        .whereIn('id', ids);
+
+      await document.$relatedQuery<Reference>('references').relate(references);
+
+      reply.status(204);
+    }
+  );
+
+  fastify.delete<RemoveDocumentReferencesRequest>(
+    '/documents/:id/relationships/references',
+    async function (request, reply) {
+      const {
+        params: { id },
+        body: { data },
+      } = request;
+      const ids = data.map(({ id }) => id);
+      const user = await User.findByToken(request.user as UserToken);
+      const document = await user
+        .$relatedQuery<Document>('documents')
+        .modify('kept')
+        .findById(id);
+
+      await document
+        .$relatedQuery<Reference>('references')
+        .modify('kept')
+        .whereIn('id', ids)
+        .unrelate();
+
+      reply.status(204);
+    }
+  );
 
   fastify.get<GetDocumentVersionsRequest>(
     '/documents/:id/versions',
