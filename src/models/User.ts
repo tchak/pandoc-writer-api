@@ -1,4 +1,4 @@
-import { Model, JSONSchema, RelationMappings } from 'objection';
+import { Model, JSONSchema, RelationMappings, Modifiers } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 
 import { BaseModel, Document, Reference } from '.';
@@ -10,6 +10,24 @@ export interface UserToken {
 export class User extends BaseModel {
   static get tableName(): string {
     return 'users';
+  }
+
+  static get modifiers(): Modifiers {
+    return {
+      deleted(builder) {
+        const { ref } = User;
+        builder.whereNotNull(ref('deleted_at'));
+      },
+      kept(builder, throwIfNotFound = true) {
+        const { ref } = User;
+        builder = builder.whereNull(ref('deleted_at'));
+
+        if (throwIfNotFound) {
+          return builder.throwIfNotFound();
+        }
+        return builder;
+      },
+    };
   }
 
   static get relationMappings(): RelationMappings {
@@ -66,7 +84,7 @@ export class User extends BaseModel {
 
   static async findByToken(token: UserToken): Promise<User> {
     return this.query()
-      .throwIfNotFound()
+      .modify('kept')
       .select('id', 'email')
       .findById(token.sub);
   }

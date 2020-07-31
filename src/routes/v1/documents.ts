@@ -116,7 +116,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     await Document.transaction(async (trx) => {
       const query = user
         .$relatedQuery<Document>('documents')
-        .throwIfNotFound()
+        .modify('kept')
         .findById(request.params.id);
       const document = await query.withGraphFetched('versions(last)');
 
@@ -146,9 +146,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const user = await User.findByToken(request.user as UserToken);
     const query = user
       .$relatedQuery<Document>('documents')
-      .throwIfNotFound()
+      .modify('kept')
       .findById(request.params.id);
-    await query.del();
+    await (await query).$destroy();
 
     reply.status(204);
   });
@@ -159,7 +159,10 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     } = request;
 
     const user = await User.findByToken(request.user as UserToken);
-    const query = user.$relatedQuery<Document>('documents').orderBy(order);
+    const query = user
+      .$relatedQuery<Document>('documents')
+      .modify('kept', false)
+      .orderBy(order);
     const documents = await query;
 
     return { data: documents.map((document) => document.$toJsonApi()) };
@@ -178,7 +181,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const user = await User.findByToken(request.user as UserToken);
     const query = user
       .$relatedQuery<Document>('documents')
-      .throwIfNotFound()
+      .modify('kept')
       .findById(id)
       .withGraphFetched('versions(last)');
     const document = await query;
@@ -214,9 +217,11 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       const user = await User.findByToken(request.user as UserToken);
       const document = await user
         .$relatedQuery<Document>('documents')
-        .throwIfNotFound()
+        .modify('kept')
         .findById(id);
-      const query = document.$relatedQuery<DocumentVersion>('versions');
+      const query = document
+        .$relatedQuery<DocumentVersion>('versions')
+        .modify('kept', false);
       const versions = await query;
 
       return {
@@ -236,9 +241,11 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       const user = await User.findByToken(request.user as UserToken);
       const document = await user
         .$relatedQuery<Document>('documents')
-        .throwIfNotFound()
+        .modify('kept')
         .findById(id);
-      const query = document.$relatedQuery<Reference>('references');
+      const query = document
+        .$relatedQuery<Reference>('references')
+        .modify('kept', false);
       const references = await query;
 
       return {

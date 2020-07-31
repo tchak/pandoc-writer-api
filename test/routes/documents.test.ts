@@ -22,20 +22,20 @@ test('get document', async (t) => {
     }
   );
 
-  t.equal(res.status, 201);
+  t.equal(res.status, 201, 'POST /documents should succeed with status 201');
   t.deepEqual((res.body as any).data.attributes.title, 'hello');
   const id = (res.body as any).data.id;
 
-  res = await request(app, '/v1/documents', 'GET', undefined, {
+  res = await request(app, '/v1/documents', undefined, undefined, {
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.status, 200);
+  t.equal(res.status, 200, 'GET /documents should succeed with status 200');
   t.equal((res.body as any).data.length, 1);
 
-  res = await request(app, `/v1/documents/${id}`, 'GET', undefined, {
+  res = await request(app, `/v1/documents/${id}`, undefined, undefined, {
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.status, 200);
+  t.equal(res.status, 200, 'GET /documents/:id should succeed with status 200');
 
   res = await request(
     app,
@@ -46,7 +46,8 @@ test('get document', async (t) => {
       authorization: `Bearer ${token}`,
     }
   );
-  t.equal(res.status, 200);
+  t.equal(res.status, 200),
+    'GET /documents/:id/versions should succeed with status 200';
   t.equal((res.body as any).data.length, 1);
 
   res = await request(
@@ -64,23 +65,31 @@ test('get document', async (t) => {
       authorization: `Bearer ${token}`,
     }
   );
-  t.equal(res.status, 204);
+  t.equal(
+    res.status,
+    204,
+    'PATCH /documents/:id should succeed with status 204'
+  );
 
   res = await request(app, `/v1/documents/${id}`, undefined, undefined, {
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.status, 200);
+  t.equal(res.status, 200, 'GET /documents/:id should succeed with status 200');
   t.deepEqual((res.body as any).data.attributes.title, 'hello2');
 
   res = await request(app, `/v1/documents/${id}`, 'DELETE', undefined, {
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.status, 204);
+  t.equal(
+    res.status,
+    204,
+    'DELETE /documents/:id should succeed with status 204'
+  );
 
   res = await request(app, '/v1/documents', undefined, undefined, {
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.status, 200);
+  t.equal(res.status, 200, 'GET /documents should succeed with status 200');
   t.equal((res.body as any).data.length, 0);
 });
 
@@ -239,7 +248,11 @@ test('patch document', async (t) => {
       authorization: `Bearer ${token}`,
     }
   );
-  t.equal(res.status, 200);
+  t.equal(
+    res.status,
+    200,
+    'GET /documents/:id/versions should succeed with status 200'
+  );
   t.equal((res.body as any).data.length, 1);
 
   const version = (res.body as any).data[0];
@@ -253,7 +266,7 @@ test('patch document', async (t) => {
       authorization: `Bearer ${token}`,
     }
   );
-  t.equal(res.status, 200);
+  t.equal(res.status, 200, 'GET /documents/:id should succeed with status 200');
   t.deepEqual((res.body as any).data.attributes.data, [
     { type: 'paragraph', children: [{ text: 'hello world!' }] },
   ]);
@@ -261,5 +274,5 @@ test('patch document', async (t) => {
   res = await request(app, `/v1/versions/${version.id}`, undefined, undefined, {
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.status, 200);
+  t.equal(res.status, 200, 'GET /versions/:id should succeed with status 200');
 });

@@ -82,7 +82,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
 
   fastify.get<GetReferencesRequest>('/references', async function (request) {
     const user = await User.findByToken(request.user as UserToken);
-    const query = user.$relatedQuery<Reference>('references');
+    const query = user
+      .$relatedQuery<Reference>('references')
+      .modify('kept', false);
     const references = await query;
 
     return {
@@ -94,8 +96,12 @@ export default async function (fastify: FastifyInstance): Promise<void> {
 
   fastify.get<GetReferenceRequest>('/references/:id', async function (request) {
     const user = await User.findByToken(request.user as UserToken);
-    const query = user.$relatedQuery<Reference>('references').throwIfNotFound();
-    const reference = await query.findById(request.params.id);
+    const query = user
+      .$relatedQuery<Reference>('references')
+      .modify('kept')
+      .findById(request.params.id);
+
+    const reference = await query;
 
     return { data: reference.$toJsonApi(request.query.fields) };
   });
@@ -107,9 +113,10 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const user = await User.findByToken(request.user as UserToken);
     const query = user
       .$relatedQuery<Reference>('references')
-      .throwIfNotFound()
+      .modify('kept')
       .findById(request.params.id);
-    await query.del();
+
+    await (await query).$destroy();
 
     reply.status(204);
   });

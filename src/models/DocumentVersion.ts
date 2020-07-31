@@ -59,7 +59,21 @@ export class DocumentVersion extends BaseModel {
     return {
       ...super.modifiers,
       last(builder) {
-        builder.orderBy('created_at').limit(1);
+        const { ref } = DocumentVersion;
+        builder.orderBy(ref('created_at')).limit(1);
+      },
+      deleted(builder) {
+        const { ref } = DocumentVersion;
+        builder.whereNotNull(ref('deleted_at'));
+      },
+      kept(builder, throwIfNotFound = true) {
+        const { ref } = DocumentVersion;
+        builder = builder.whereNull(ref('deleted_at'));
+
+        if (throwIfNotFound) {
+          return builder.throwIfNotFound();
+        }
+        return builder;
       },
     };
   }

@@ -1,4 +1,4 @@
-import { Model, JSONSchema, RelationMappings } from 'objection';
+import { Model, JSONSchema, RelationMappings, Modifiers } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 
 import { BaseModel, Document, User } from '.';
@@ -7,6 +7,24 @@ import { Item } from '../lib/zotero';
 export class Reference extends BaseModel {
   static get tableName(): string {
     return 'references';
+  }
+
+  static get modifiers(): Modifiers {
+    return {
+      deleted(builder) {
+        const { ref } = Reference;
+        builder.whereNotNull(ref('deleted_at'));
+      },
+      kept(builder, throwIfNotFound = true) {
+        const { ref } = Reference;
+        builder = builder.whereNull(ref('deleted_at'));
+
+        if (throwIfNotFound) {
+          return builder.throwIfNotFound();
+        }
+        return builder;
+      },
+    };
   }
 
   static get relationMappings(): RelationMappings {

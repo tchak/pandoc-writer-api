@@ -4,7 +4,7 @@ import { verify, hash } from 'argon2';
 import { pwnedPassword } from 'hibp';
 import { validate } from 'validate.js';
 
-import { User } from '../../models';
+import { User, UserToken } from '../../models';
 
 interface CreateUserRequest extends RequestGenericInterface {
   Body: {
@@ -88,6 +88,13 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     }
 
     reply.unauthorized();
+  });
+
+  fastify.delete('/users/me', async function (request, reply) {
+    const user = await User.findByToken(request.user as UserToken);
+    await user.$destroy();
+
+    reply.send(204);
   });
 }
 

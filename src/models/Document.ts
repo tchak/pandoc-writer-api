@@ -1,4 +1,4 @@
-import { Model, RelationMappings, JSONSchema } from 'objection';
+import { Model, RelationMappings, JSONSchema, Modifiers } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
 import remark from 'remark';
@@ -10,6 +10,24 @@ import { BaseModel, Reference, DocumentVersion, User } from '.';
 export class Document extends BaseModel {
   static get tableName(): string {
     return 'documents';
+  }
+
+  static get modifiers(): Modifiers {
+    return {
+      deleted(builder) {
+        const { ref } = Document;
+        builder.whereNotNull(ref('deleted_at'));
+      },
+      kept(builder, throwIfNotFound = true) {
+        const { ref } = Document;
+        builder = builder.whereNull(ref('deleted_at'));
+
+        if (throwIfNotFound) {
+          return builder.throwIfNotFound();
+        }
+        return builder;
+      },
+    };
   }
 
   static get relationMappings(): RelationMappings {

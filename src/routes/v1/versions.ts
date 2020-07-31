@@ -1,6 +1,6 @@
 import { FastifyInstance, RequestGenericInterface } from 'fastify';
 
-import { User, DocumentVersion, UserToken } from '../../models';
+import { User, Document, DocumentVersion, UserToken } from '../../models';
 
 interface GetVersionRequest extends RequestGenericInterface {
   Params: {
@@ -30,10 +30,12 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     } = request;
     const user = await User.findByToken(request.user as UserToken);
     const query = DocumentVersion.query()
+      .modify('kept')
       .joinRelated('document')
       .where('document.user_id', user.id)
-      .throwIfNotFound()
+      .whereNull('document.deleted_at')
       .findById(id);
+
     const version = await query;
 
     return { data: version.$toJsonApi(fields) };
@@ -48,11 +50,13 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     } = request;
     const user = await User.findByToken(request.user as UserToken);
     const query = DocumentVersion.query()
+      .modify('kept')
       .joinRelated('document')
       .where('document.user_id', user.id)
-      .throwIfNotFound()
+      .whereNull('document.deleted_at')
       .findById(id);
-    await query.del();
+
+    await (await query).$destroy();
 
     reply.status(204);
   });
