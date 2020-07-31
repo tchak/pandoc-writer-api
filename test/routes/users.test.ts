@@ -5,7 +5,7 @@ import { build, request } from '../helper';
 test('validate user email', async (t) => {
   const app = await build(t);
 
-  let res = await request(app, '/api/users', 'POST', {
+  let res = await request(app, '/v1/users', 'POST', {
     data: {
       attributes: {
         email: '',
@@ -15,7 +15,7 @@ test('validate user email', async (t) => {
   });
   t.equal(res.status, 400);
 
-  res = await request(app, '/api/users', 'POST', {
+  res = await request(app, '/v1/users', 'POST', {
     data: {
       attributes: {
         email: 'toto',
@@ -26,7 +26,7 @@ test('validate user email', async (t) => {
   t.equal(res.status, 400);
   t.deepEqual((res.body as any).errors.email, ['Email is not a valid email']);
 
-  res = await request(app, '/api/users', 'POST', {
+  res = await request(app, '/v1/users', 'POST', {
     data: {
       attributes: {
         email: 'toto@toto.com',

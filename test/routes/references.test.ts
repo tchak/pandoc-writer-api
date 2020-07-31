@@ -8,7 +8,7 @@ test('get references', async (t) => {
 
   let res = await request(
     app,
-    '/api/references',
+    '/v1/references',
     'POST',
     {
       data: {
@@ -26,7 +26,7 @@ test('get references', async (t) => {
   );
   t.equal(res.status, 201);
 
-  res = await request(app, '/api/references', undefined, undefined, {
+  res = await request(app, '/v1/references', undefined, undefined, {
     authorization: `Bearer ${token}`,
   });
   t.equal(res.status, 200);

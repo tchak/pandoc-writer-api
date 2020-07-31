@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('dotenv').config();
+
 // This file contains code that we reuse
 // between our tests.
 import Fastify, { FastifyInstance, HTTPMethods } from 'fastify';
@@ -65,7 +68,7 @@ async function request(
 async function login(app: FastifyInstance, email?: string): Promise<string> {
   const password = nanoid();
   email = email || `${nanoid()}@test.com`;
-  await request(app, '/api/users', 'POST', {
+  await request(app, '/v1/users', 'POST', {
     data: {
       type: 'users',
       attributes: {
@@ -75,7 +78,7 @@ async function login(app: FastifyInstance, email?: string): Promise<string> {
     },
   });
 
-  const { body } = await request(app, '/api/token', 'POST', {
+  const { body } = await request(app, '/v1/token', 'POST', {
     grant_type: 'password',
     username: email,
     password,

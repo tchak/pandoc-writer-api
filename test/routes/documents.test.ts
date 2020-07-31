@@ -8,7 +8,7 @@ test('get document', async (t) => {
 
   let res = await request(
     app,
-    '/api/documents',
+    '/v1/documents',
     'POST',
     {
       data: {
@@ -26,20 +26,20 @@ test('get document', async (t) => {
   t.deepEqual((res.body as any).data.attributes.title, 'hello');
   const id = (res.body as any).data.id;
 
-  res = await request(app, '/api/documents', 'GET', undefined, {
+  res = await request(app, '/v1/documents', 'GET', undefined, {
     authorization: `Bearer ${token}`,
   });
   t.equal(res.status, 200);
   t.equal((res.body as any).data.length, 1);
 
-  res = await request(app, `/api/documents/${id}`, 'GET', undefined, {
+  res = await request(app, `/v1/documents/${id}`, 'GET', undefined, {
     authorization: `Bearer ${token}`,
   });
   t.equal(res.status, 200);
 
   res = await request(
     app,
-    `/api/documents/${id}/versions`,
+    `/v1/documents/${id}/versions`,
     undefined,
     undefined,
     {
@@ -51,7 +51,7 @@ test('get document', async (t) => {
 
   res = await request(
     app,
-    `/api/documents/${id}`,
+    `/v1/documents/${id}`,
     'PATCH',
     {
       data: {
@@ -66,18 +66,18 @@ test('get document', async (t) => {
   );
   t.equal(res.status, 204);
 
-  res = await request(app, `/api/documents/${id}`, undefined, undefined, {
+  res = await request(app, `/v1/documents/${id}`, undefined, undefined, {
     authorization: `Bearer ${token}`,
   });
   t.equal(res.status, 200);
   t.deepEqual((res.body as any).data.attributes.title, 'hello2');
 
-  res = await request(app, `/api/documents/${id}`, 'DELETE', undefined, {
+  res = await request(app, `/v1/documents/${id}`, 'DELETE', undefined, {
     authorization: `Bearer ${token}`,
   });
   t.equal(res.status, 204);
 
-  res = await request(app, '/api/documents', undefined, undefined, {
+  res = await request(app, '/v1/documents', undefined, undefined, {
     authorization: `Bearer ${token}`,
   });
   t.equal(res.status, 200);
@@ -90,7 +90,7 @@ test('get formatted document', async (t) => {
 
   let res = await request(
     app,
-    '/api/documents',
+    '/v1/documents',
     'POST',
     {
       data: {
@@ -122,7 +122,7 @@ test('get formatted document', async (t) => {
 
   await request(
     app,
-    `/api/documents/${id}`,
+    `/v1/documents/${id}`,
     'PATCH',
     {
       data: {
@@ -134,25 +134,25 @@ test('get formatted document', async (t) => {
     { ['if-match']: etag, authorization: `Bearer ${token}` }
   );
 
-  res = await request(app, `/api/documents/${id}`, 'GET', undefined, {
+  res = await request(app, `/v1/documents/${id}`, 'GET', undefined, {
     accept: 'text/html',
     authorization: `Bearer ${token}`,
   });
   t.equal(res.body, html);
 
-  res = await request(app, `/api/documents/${id}.html`, 'GET', undefined, {
+  res = await request(app, `/v1/documents/${id}.html`, 'GET', undefined, {
     accept: '',
     authorization: `Bearer ${token}`,
   });
   t.equal(res.body, html);
 
-  res = await request(app, `/api/documents/${id}`, 'GET', undefined, {
+  res = await request(app, `/v1/documents/${id}`, 'GET', undefined, {
     accept: 'text/markdown',
     authorization: `Bearer ${token}`,
   });
   t.equal(res.body, markdown);
 
-  res = await request(app, `/api/documents/${id}.md`, 'GET', undefined, {
+  res = await request(app, `/v1/documents/${id}.md`, 'GET', undefined, {
     accept: '',
     authorization: `Bearer ${token}`,
   });
@@ -165,7 +165,7 @@ test('patch document', async (t) => {
 
   let res = await request(
     app,
-    '/api/documents',
+    '/v1/documents',
     'POST',
     {
       data: {
@@ -184,7 +184,7 @@ test('patch document', async (t) => {
   let data = [{ type: 'paragraph', children: [{ text: 'hello world' }] }];
   res = await request(
     app,
-    `/api/documents/${id}`,
+    `/v1/documents/${id}`,
     'PATCH',
     {
       data: {
@@ -201,7 +201,7 @@ test('patch document', async (t) => {
   data = [{ type: 'paragraph', children: [{ text: 'hello world!' }] }];
   res = await request(
     app,
-    `/api/documents/${id}`,
+    `/v1/documents/${id}`,
     'PATCH',
     {
       data: {
@@ -217,7 +217,7 @@ test('patch document', async (t) => {
   data = [{ type: 'paragraph', children: [{ text: 'hello' }] }];
   res = await request(
     app,
-    `/api/documents/${id}`,
+    `/v1/documents/${id}`,
     'PATCH',
     {
       data: {
@@ -232,7 +232,7 @@ test('patch document', async (t) => {
 
   res = await request(
     app,
-    `/api/documents/${id}/versions`,
+    `/v1/documents/${id}/versions`,
     undefined,
     undefined,
     {
@@ -246,7 +246,7 @@ test('patch document', async (t) => {
 
   res = await request(
     app,
-    `/api/documents/${id}?fields[]=data`,
+    `/v1/documents/${id}?fields[]=data`,
     undefined,
     undefined,
     {
@@ -258,14 +258,8 @@ test('patch document', async (t) => {
     { type: 'paragraph', children: [{ text: 'hello world!' }] },
   ]);
 
-  res = await request(
-    app,
-    `/api/versions/${version.id}`,
-    undefined,
-    undefined,
-    {
-      authorization: `Bearer ${token}`,
-    }
-  );
+  res = await request(app, `/v1/versions/${version.id}`, undefined, undefined, {
+    authorization: `Bearer ${token}`,
+  });
   t.equal(res.status, 200);
 });
