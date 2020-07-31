@@ -63,3 +63,4 @@ jobs:
         REDIS_PORT: ${{ job.services.redis.ports[6379] }}
         TRANSLATION_SERVER_HOST: https://zotero-translation-server.herokuapp.com
         TRANSLATION_SERVER_SECRET_KEY: test-key
+        AUTH_SECRET: test-secret
