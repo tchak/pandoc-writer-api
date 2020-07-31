@@ -14,7 +14,8 @@
     "lint": "eslint . --ext .ts",
     "dev": "tsc && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\"  \"tsc -w\" \"fastify start -w -l info -P dist/app.js\"",
     "db:migrate": "knex migrate:latest",
-    "db:rollback": "knex migrate:rollback"
+    "db:rollback": "knex migrate:rollback",
+    "secret": "node bin/secret.js"
   },
   "keywords": [],
   "author": "Paul Chavard",
