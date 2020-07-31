@@ -1,63 +1,108 @@
 import { test } from 'tap';
 
-import { build, request } from '../helper';
+import { build, request, login } from '../helper';
 
 test('get document', async (t) => {
   const app = await build(t);
+  const token = await login(app);
 
-  let res = await request(app, '/api/documents', 'POST', {
-    data: {
-      attributes: {
-        title: 'hello',
+  let res = await request(
+    app,
+    '/api/documents',
+    'POST',
+    {
+      data: {
+        attributes: {
+          title: 'hello',
+        },
       },
     },
-  });
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
+
   t.equal(res.status, 201);
   t.deepEqual((res.body as any).data.attributes.title, 'hello');
   const id = (res.body as any).data.id;
 
-  res = await request(app, '/api/documents');
+  res = await request(app, '/api/documents', 'GET', undefined, {
+    authorization: `Bearer ${token}`,
+  });
   t.equal(res.status, 200);
   t.equal((res.body as any).data.length, 1);
 
-  res = await request(app, `/api/documents/${id}`);
+  res = await request(app, `/api/documents/${id}`, 'GET', undefined, {
+    authorization: `Bearer ${token}`,
+  });
   t.equal(res.status, 200);
 
-  res = await request(app, `/api/documents/${id}/versions`);
+  res = await request(
+    app,
+    `/api/documents/${id}/versions`,
+    undefined,
+    undefined,
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
   t.equal(res.status, 200);
   t.equal((res.body as any).data.length, 1);
 
-  res = await request(app, `/api/documents/${id}`, 'PATCH', {
-    data: {
-      attributes: {
-        title: 'hello2',
+  res = await request(
+    app,
+    `/api/documents/${id}`,
+    'PATCH',
+    {
+      data: {
+        attributes: {
+          title: 'hello2',
+        },
       },
     },
-  });
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
   t.equal(res.status, 204);
 
-  res = await request(app, `/api/documents/${id}`);
+  res = await request(app, `/api/documents/${id}`, undefined, undefined, {
+    authorization: `Bearer ${token}`,
+  });
   t.equal(res.status, 200);
   t.deepEqual((res.body as any).data.attributes.title, 'hello2');
 
-  res = await request(app, `/api/documents/${id}`, 'DELETE');
+  res = await request(app, `/api/documents/${id}`, 'DELETE', undefined, {
+    authorization: `Bearer ${token}`,
+  });
   t.equal(res.status, 204);
 
-  res = await request(app, '/api/documents');
+  res = await request(app, '/api/documents', undefined, undefined, {
+    authorization: `Bearer ${token}`,
+  });
   t.equal(res.status, 200);
   t.equal((res.body as any).data.length, 0);
 });
 
-test('get document with format', async (t) => {
+test('get formatted document', async (t) => {
   const app = await build(t);
+  const token = await login(app);
 
-  let res = await request(app, '/api/documents', 'POST', {
-    data: {
-      attributes: {
-        title: 'hello',
+  let res = await request(
+    app,
+    '/api/documents',
+    'POST',
+    {
+      data: {
+        attributes: {
+          title: 'hello',
+        },
       },
     },
-  });
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
   const id = (res.body as any).data.id;
   const etag = res.headers.etag;
   const data = [
@@ -86,40 +131,53 @@ test('get document with format', async (t) => {
         },
       },
     },
-    { ['if-match']: etag }
+    { ['if-match']: etag, authorization: `Bearer ${token}` }
   );
 
   res = await request(app, `/api/documents/${id}`, 'GET', undefined, {
     accept: 'text/html',
+    authorization: `Bearer ${token}`,
   });
   t.equal(res.body, html);
 
   res = await request(app, `/api/documents/${id}.html`, 'GET', undefined, {
     accept: '',
+    authorization: `Bearer ${token}`,
   });
   t.equal(res.body, html);
 
   res = await request(app, `/api/documents/${id}`, 'GET', undefined, {
     accept: 'text/markdown',
+    authorization: `Bearer ${token}`,
   });
   t.equal(res.body, markdown);
 
   res = await request(app, `/api/documents/${id}.md`, 'GET', undefined, {
     accept: '',
+    authorization: `Bearer ${token}`,
   });
   t.equal(res.body, markdown);
 });
 
 test('patch document', async (t) => {
   const app = await build(t);
+  const token = await login(app);
 
-  let res = await request(app, '/api/documents', 'POST', {
-    data: {
-      attributes: {
-        title: 'hello',
+  let res = await request(
+    app,
+    '/api/documents',
+    'POST',
+    {
+      data: {
+        attributes: {
+          title: 'hello',
+        },
       },
     },
-  });
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
   const id = (res.body as any).data.id;
   let etag = res.headers.etag;
 
@@ -135,7 +193,7 @@ test('patch document', async (t) => {
         },
       },
     },
-    { ['if-match']: etag }
+    { ['if-match']: etag, authorization: `Bearer ${token}` }
   );
   t.equal(res.status, 204);
   etag = res.headers.etag;
@@ -152,7 +210,7 @@ test('patch document', async (t) => {
         },
       },
     },
-    { ['if-match']: etag }
+    { ['if-match']: etag, authorization: `Bearer ${token}` }
   );
   t.equal(res.status, 204);
 
@@ -168,22 +226,46 @@ test('patch document', async (t) => {
         },
       },
     },
-    { ['if-match']: etag }
+    { ['if-match']: etag, authorization: `Bearer ${token}` }
   );
   t.equal(res.status, 412);
 
-  res = await request(app, `/api/documents/${id}/versions`);
+  res = await request(
+    app,
+    `/api/documents/${id}/versions`,
+    undefined,
+    undefined,
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
   t.equal(res.status, 200);
   t.equal((res.body as any).data.length, 1);
 
   const version = (res.body as any).data[0];
 
-  res = await request(app, `/api/documents/${id}?fields[]=data`);
+  res = await request(
+    app,
+    `/api/documents/${id}?fields[]=data`,
+    undefined,
+    undefined,
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
   t.equal(res.status, 200);
   t.deepEqual((res.body as any).data.attributes.data, [
     { type: 'paragraph', children: [{ text: 'hello world!' }] },
   ]);
 
-  res = await request(app, `/api/versions/${version.id}`);
+  res = await request(
+    app,
+    `/api/versions/${version.id}`,
+    undefined,
+    undefined,
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
   t.equal(res.status, 200);
 });

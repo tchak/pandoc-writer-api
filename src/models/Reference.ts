@@ -1,7 +1,7 @@
 import { Model, JSONSchema, RelationMappings } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 
-import { BaseModel, Document } from '.';
+import { BaseModel, Document, User } from '.';
 import { Item } from '../lib/zotero';
 
 export class Reference extends BaseModel {
@@ -11,6 +11,14 @@ export class Reference extends BaseModel {
 
   static get relationMappings(): RelationMappings {
     return {
+      user: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: User,
+        join: {
+          from: 'references.user_id',
+          to: 'users.id',
+        },
+      },
       documents: {
         relation: Model.ManyToManyRelation,
         modelClass: Document,
@@ -28,13 +36,13 @@ export class Reference extends BaseModel {
 
   static jsonSchema: JSONSchema = {
     type: 'object',
-    required: [],
+    required: ['data'],
 
     properties: {
       id: { type: 'string' },
       data: { type: 'object', properties: {}, additionalProperties: true },
-      createdAt: { type: 'string' },
-      updatedAt: { type: 'string' },
+      createdAt: { type: 'date-time' },
+      updatedAt: { type: 'date-time' },
     },
   };
 

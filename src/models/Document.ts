@@ -5,7 +5,7 @@ import remark from 'remark';
 import footnotes from 'remark-footnotes';
 
 import reslate, { BlockType } from '../lib/mdast-slate';
-import { BaseModel, Reference, DocumentVersion } from '.';
+import { BaseModel, Reference, DocumentVersion, User } from '.';
 
 export class Document extends BaseModel {
   static get tableName(): string {
@@ -14,6 +14,14 @@ export class Document extends BaseModel {
 
   static get relationMappings(): RelationMappings {
     return {
+      user: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: User,
+        join: {
+          from: 'documents.user_id',
+          to: 'users.id',
+        },
+      },
       versions: {
         relation: Model.HasManyRelation,
         modelClass: DocumentVersion,
@@ -44,8 +52,8 @@ export class Document extends BaseModel {
     properties: {
       id: { type: 'string' },
       title: { type: 'string', minLength: 1 },
-      createdAt: { type: 'string' },
-      updatedAt: { type: 'string' },
+      createdAt: { type: 'date-time' },
+      updatedAt: { type: 'date-time' },
     },
   };
 

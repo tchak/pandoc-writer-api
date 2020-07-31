@@ -29,7 +29,7 @@ export class DocumentVersion extends BaseModel {
   static get relationMappings(): RelationMappings {
     return {
       document: {
-        relation: Model.HasOneRelation,
+        relation: Model.BelongsToOneRelation,
         modelClass: Document,
         join: {
           from: 'document_versions.document_id',
@@ -50,8 +50,8 @@ export class DocumentVersion extends BaseModel {
         type: 'array',
         items: { type: 'object', properties: {}, additionalProperties: true },
       },
-      createdAt: { type: 'string' },
-      updatedAt: { type: 'string' },
+      createdAt: { type: 'date-time' },
+      updatedAt: { type: 'date-time' },
     },
   };
 

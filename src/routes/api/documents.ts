@@ -6,7 +6,13 @@ import {
 } from 'fastify';
 import { Record as OrbitRecord } from '@orbit/data';
 
-import { Document, Reference, DocumentVersion } from '../../models';
+import {
+  User,
+  Document,
+  Reference,
+  DocumentVersion,
+  UserToken,
+} from '../../models';
 import { pandoc } from '../../lib/pandoc';
 import { BlockType } from '../../lib/mdast-slate';
 
@@ -69,18 +75,26 @@ interface GetDocumentReferencesRequest extends RequestGenericInterface {
 }
 
 export default async function (fastify: FastifyInstance): Promise<void> {
+  fastify.addHook(
+    'preHandler',
+    fastify.auth([async (request) => request.jwtVerify()])
+  );
+
   fastify.post<CreateDocumentRequest>('/documents', async function (
     request,
     reply
   ) {
-    const document = await Document.query().insertGraphAndFetch({
-      title: request.body.data.attributes.title,
-      versions: [
-        {
-          data: [],
-        },
-      ],
-    });
+    const user = await User.findByToken(request.user as UserToken);
+    const document = await user
+      .$relatedQuery<Document>('documents')
+      .insertGraphAndFetch({
+        title: request.body.data.attributes.title,
+        versions: [
+          {
+            data: [],
+          },
+        ],
+      });
 
     reply.header('etag', document.sha);
     reply.status(201);
@@ -97,9 +111,11 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       data: BlockType[];
     };
     const etag = request.headers['if-match'];
+    const user = await User.findByToken(request.user as UserToken);
 
     await Document.transaction(async (trx) => {
-      const query = Document.query(trx)
+      const query = user
+        .$relatedQuery<Document>('documents')
         .throwIfNotFound()
         .findById(request.params.id);
       const document = await query.withGraphFetched('versions(last)');
@@ -127,7 +143,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const query = Document.query()
+    const user = await User.findByToken(request.user as UserToken);
+    const query = user
+      .$relatedQuery<Document>('documents')
       .throwIfNotFound()
       .findById(request.params.id);
     await query.del();
@@ -139,7 +157,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const {
       query: { order = 'created_at' },
     } = request;
-    const query = Document.query().orderBy(order);
+
+    const user = await User.findByToken(request.user as UserToken);
+    const query = user.$relatedQuery<Document>('documents').orderBy(order);
     const documents = await query;
 
     return { data: documents.map((document) => document.$toJsonApi()) };
@@ -154,7 +174,10 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       query: { fields },
     } = request;
     const [id, format] = idWithFormat.split('.');
-    const query = Document.query()
+
+    const user = await User.findByToken(request.user as UserToken);
+    const query = user
+      .$relatedQuery<Document>('documents')
       .throwIfNotFound()
       .findById(id)
       .withGraphFetched('versions(last)');
@@ -187,7 +210,12 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         params: { id },
         query: { fields },
       } = request;
-      const document = await Document.query().throwIfNotFound().findById(id);
+
+      const user = await User.findByToken(request.user as UserToken);
+      const document = await user
+        .$relatedQuery<Document>('documents')
+        .throwIfNotFound()
+        .findById(id);
       const query = document.$relatedQuery<DocumentVersion>('versions');
       const versions = await query;
 
@@ -204,7 +232,12 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         params: { id },
         query: { fields },
       } = request;
-      const document = await Document.query().throwIfNotFound().findById(id);
+
+      const user = await User.findByToken(request.user as UserToken);
+      const document = await user
+        .$relatedQuery<Document>('documents')
+        .throwIfNotFound()
+        .findById(id);
       const query = document.$relatedQuery<Reference>('references');
       const references = await query;
 

@@ -1,6 +1,6 @@
 import { FastifyInstance, RequestGenericInterface } from 'fastify';
 
-import { DocumentVersion } from '../../models';
+import { User, DocumentVersion, UserToken } from '../../models';
 
 interface GetVersionRequest extends RequestGenericInterface {
   Params: {
@@ -18,12 +18,22 @@ interface DestroyVersionRequest extends RequestGenericInterface {
 }
 
 export default async function (fastify: FastifyInstance): Promise<void> {
+  fastify.addHook(
+    'preHandler',
+    fastify.auth([async (request) => request.jwtVerify()])
+  );
+
   fastify.get<GetVersionRequest>('/versions/:id', async function (request) {
     const {
       params: { id },
       query: { fields },
     } = request;
-    const query = DocumentVersion.query().throwIfNotFound().findById(id);
+    const user = await User.findByToken(request.user as UserToken);
+    const query = DocumentVersion.query()
+      .joinRelated('document')
+      .where('document.user_id', user.id)
+      .throwIfNotFound()
+      .findById(id);
     const version = await query;
 
     return { data: version.$toJsonApi(fields) };
@@ -36,7 +46,12 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const {
       params: { id },
     } = request;
-    const query = DocumentVersion.query().throwIfNotFound().findById(id);
+    const user = await User.findByToken(request.user as UserToken);
+    const query = DocumentVersion.query()
+      .joinRelated('document')
+      .where('document.user_id', user.id)
+      .throwIfNotFound()
+      .findById(id);
     await query.del();
 
     reply.status(204);

@@ -2,7 +2,7 @@ import { FastifyInstance, RequestGenericInterface } from 'fastify';
 import { Record as OrbitRecord } from '@orbit/data';
 
 import { searchByURL, searchByIdentifier, Item } from '../../lib/zotero';
-import { Reference } from '../../models';
+import { User, Reference, UserToken } from '../../models';
 
 interface CreateReferenceRequest extends RequestGenericInterface {
   Body: {
@@ -39,12 +39,18 @@ interface GetReferenceRequest extends RequestGenericInterface {
 }
 
 export default async function (fastify: FastifyInstance): Promise<void> {
+  fastify.addHook(
+    'preHandler',
+    fastify.auth([async (request) => request.jwtVerify()])
+  );
+
   fastify.post<CreateReferenceRequest>('/references', async function (
     request,
     reply
   ) {
     const { data } = request.body.data.attributes;
-    const reference = await Reference.query().insert({
+    const user = await User.findByToken(request.user as UserToken);
+    const reference = await user.$relatedQuery<Reference>('references').insert({
       data,
     });
 
@@ -56,6 +62,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
+    const user = await User.findByToken(request.user as UserToken);
     const { url, identifier } = request.body;
     let items: Item[];
 
@@ -65,16 +72,17 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       items = await searchByIdentifier(identifier);
     }
 
-    const references = await Reference.query().insert(
-      items.map((data) => ({ data }))
-    );
+    const references = await user
+      .$relatedQuery<Reference>('references')
+      .insert(items.map((data) => ({ data })));
 
     reply.status(201);
     return { ids: references.map(({ id }) => id) };
   });
 
   fastify.get<GetReferencesRequest>('/references', async function (request) {
-    const query = Reference.query();
+    const user = await User.findByToken(request.user as UserToken);
+    const query = user.$relatedQuery<Reference>('references');
     const references = await query;
 
     return {
@@ -85,7 +93,8 @@ export default async function (fastify: FastifyInstance): Promise<void> {
   });
 
   fastify.get<GetReferenceRequest>('/references/:id', async function (request) {
-    const query = Reference.query().throwIfNotFound();
+    const user = await User.findByToken(request.user as UserToken);
+    const query = user.$relatedQuery<Reference>('references').throwIfNotFound();
     const reference = await query.findById(request.params.id);
 
     return { data: reference.$toJsonApi(request.query.fields) };
@@ -95,7 +104,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const query = Reference.query()
+    const user = await User.findByToken(request.user as UserToken);
+    const query = user
+      .$relatedQuery<Reference>('references')
       .throwIfNotFound()
       .findById(request.params.id);
     await query.del();

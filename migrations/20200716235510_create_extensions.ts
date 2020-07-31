@@ -1,4 +1,6 @@
-exports.up = function (knex) {
+import Knex from 'knex';
+
+exports.up = function (knex: Knex) {
   return knex.raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
 };
 

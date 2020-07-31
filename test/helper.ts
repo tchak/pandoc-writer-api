@@ -5,6 +5,7 @@ import Fastify, { FastifyInstance, HTTPMethods } from 'fastify';
 import fp from 'fastify-plugin';
 import cleaner from 'knex-cleaner';
 import Knex from 'knex';
+import { nanoid } from 'nanoid';
 import knexConfig from '../knexfile';
 import App from '../src/app';
 
@@ -73,4 +74,26 @@ async function request(
   };
 }
 
-export { config, build, request };
+async function login(app: FastifyInstance, email?: string) {
+  const password = nanoid();
+  email = email || `${nanoid()}@test.com`;
+  await request(app, '/api/users', 'POST', {
+    data: {
+      type: 'users',
+      attributes: {
+        email,
+        password,
+      },
+    },
+  });
+
+  const { body } = await request(app, '/api/token', 'POST', {
+    grant_type: 'password',
+    username: email,
+    password,
+  });
+
+  return (body as any).access_token;
+}
+
+export { config, build, request, login };

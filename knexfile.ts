@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
+require('ts-node/register');
 
 module.exports = {
   development: {
@@ -43,3 +44,5 @@ module.exports = {
     },
   },
 };
+
+export default module.exports;
