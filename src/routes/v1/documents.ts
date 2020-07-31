@@ -352,15 +352,27 @@ async function renderDocument(
       return document.markdown;
     case 'html':
       reply.type('text/html');
-      return pandoc(document.markdown, { from: 'markdown+smart', to: 'html' });
+      return pandoc(document.markdownWithFrontmatter, {
+        from: 'markdown+smart+emoji',
+        filter: 'pandoc-citeproc',
+        to: 'html',
+      });
     case 'docx':
       reply.type(
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       );
-      return pandoc(document.markdown, { from: 'markdown+smart', to: 'docx' });
+      return pandoc(document.markdownWithFrontmatter, {
+        from: 'markdown+smart+emoji',
+        filter: 'pandoc-citeproc',
+        to: 'docx',
+      });
     case 'pdf':
       reply.type('application/pdf');
-      return pandoc(document.markdown, { from: 'markdown+smart', to: 'pdf' });
+      return pandoc(document.markdownWithFrontmatter, {
+        from: 'markdown+smart',
+        filter: 'pandoc-citeproc',
+        to: 'pdf',
+      });
   }
 }
 

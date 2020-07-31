@@ -40,6 +40,7 @@
     "fastify-rate-limit": "^4.0.2",
     "fastify-sensible": "^3.0.1",
     "hibp": "^9.0.0",
+    "js-yaml": "^3.14.0",
     "jsdom": "^16.3.0",
     "knex": "^0.21.2",
     "luxon": "^1.24.1",
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "@types/diff-match-patch": "^1.0.32",
+    "@types/js-yaml": "^3.12.5",
     "@types/jsdom": "^16.2.3",
     "@types/luxon": "^1.24.3",
     "@types/node": "^14.0.27",

@@ -3,6 +3,7 @@ import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
 import remark from 'remark';
 import footnotes from 'remark-footnotes';
+import { safeDump } from 'js-yaml';
 
 import reslate, { BlockType } from '../lib/mdast-slate';
 import { BaseModel, Reference, DocumentVersion, User } from '.';
@@ -56,6 +57,7 @@ export class Document extends BaseModel {
           through: {
             from: 'documents_references.document_id',
             to: 'documents_references.reference_id',
+            extra: ['nocite'],
           },
           to: 'references.id',
         },
@@ -91,6 +93,20 @@ export class Document extends BaseModel {
 
   get report(): string {
     return this.versions[0].report;
+  }
+
+  get frontmatter(): string {
+    const frontmatter = safeDump({
+      title: this.title,
+      references: [],
+      nocite: [],
+      'suppress-bibliography': true,
+    });
+    return `---\n${frontmatter}\n...\n`;
+  }
+
+  get markdownWithFrontmatter(): string {
+    return `${this.frontmatter}${this.markdown}`;
   }
 
   title: string;
