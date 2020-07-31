@@ -19,6 +19,7 @@ exports.up = async function (knex: Knex) {
   });
 
   await knex.schema.createTable('documents_references', (table) => {
+    table.boolean('nocite').defaultTo(false).notNullable();
     table
       .uuid('document_id')
       .notNullable()
