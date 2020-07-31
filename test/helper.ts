@@ -1,19 +1,9 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 // This file contains code that we reuse
 // between our tests.
 import Fastify, { FastifyInstance, HTTPMethods } from 'fastify';
 import fp from 'fastify-plugin';
-import cleaner from 'knex-cleaner';
-import Knex from 'knex';
 import { nanoid } from 'nanoid';
-import knexConfig from '../knexfile';
 import App from '../src/app';
-
-async function cleanDB(): Promise<void> {
-  const knex = Knex(knexConfig.test);
-  await cleaner.clean(knex);
-  await knex.destroy();
-}
 
 // Fill in this config with all the configurations
 // needed for testing the application
@@ -24,8 +14,6 @@ function config(): unknown {
 // automatically build and tear down our instance
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function build(t: any): Promise<FastifyInstance> {
-  await cleanDB();
-
   const app = Fastify();
 
   // fastify-plugin ensures that all decorators
@@ -74,7 +62,7 @@ async function request(
   };
 }
 
-async function login(app: FastifyInstance, email?: string) {
+async function login(app: FastifyInstance, email?: string): Promise<string> {
   const password = nanoid();
   email = email || `${nanoid()}@test.com`;
   await request(app, '/api/users', 'POST', {

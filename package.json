@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "NODE_ENV=test tap test/**/*.test.ts",
+    "test": "NODE_ENV=test tap -b -R specy --before bin/db-cleaner.js test/**/*.test.ts",
     "start": "yarn build:ts && fastify start -l info dist/app.js",
     "routes": "yarn build:ts && fastify routes dist/app.js",
     "build:ts": "tsc",
@@ -17,13 +17,13 @@
     "db:rollback": "knex migrate:rollback"
   },
   "keywords": [],
-  "author": "",
+  "author": "Paul Chavard",
   "license": "MIT",
   "dependencies": {
     "@koalition/error-handler": "^0.1.1",
     "@orbit/data": "^0.17.0-beta.4",
     "argon2": "^0.26.2",
-    "aws-sdk": "^2.723.0",
+    "aws-sdk": "^2.724.0",
     "diff-match-patch": "^1.0.5",
     "escape-html": "^1.0.3",
     "fastify": "^3.1.1",
@@ -34,7 +34,7 @@
     "fastify-cors": "^4.1.0",
     "fastify-favicon": "^3.0.0",
     "fastify-helmet": "^4.0.2",
-    "fastify-jwt": "^2.1.2",
+    "fastify-jwt": "^2.1.3",
     "fastify-plugin": "^2.0.3",
     "fastify-sensible": "^3.0.1",
     "hibp": "^9.0.0",
@@ -70,6 +70,7 @@
     "knex-cleaner": "^1.3.0",
     "nanoid": "^3.1.12",
     "prettier": "^2.0.5",
+    "secure-random": "^1.1.2",
     "tap": "^14.10.8",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
