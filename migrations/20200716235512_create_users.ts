@@ -5,6 +5,7 @@ exports.up = function (knex: Knex) {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.text('email').notNullable().unique();
     table.text('password_hash').notNullable();
+    table.text('full_name');
 
     table.timestamp('created_at').defaultTo(knex.fn.now()).notNullable();
     table.timestamp('updated_at').defaultTo(knex.fn.now()).notNullable();
