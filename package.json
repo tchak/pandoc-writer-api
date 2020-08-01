@@ -59,6 +59,7 @@
   },
   "devDependencies": {
     "@types/diff-match-patch": "^1.0.32",
+    "@types/http-errors": "^1.8.0",
     "@types/js-yaml": "^3.12.5",
     "@types/jsdom": "^16.2.3",
     "@types/luxon": "^1.24.3",
