@@ -1,7 +1,7 @@
 import { Model, JSONSchema, RelationMappings, Modifiers } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 
-import { BaseModel, Document, Reference } from '.';
+import { BaseModel, Document, Reference, RefreshToken } from '.';
 
 export interface UserToken {
   sub: string;
@@ -46,6 +46,14 @@ export class User extends BaseModel {
         join: {
           from: 'users.id',
           to: 'references.user_id',
+        },
+      },
+      refreshTokens: {
+        relation: Model.HasManyRelation,
+        modelClass: RefreshToken,
+        join: {
+          from: 'users.id',
+          to: 'refresh_tokens.user_id',
         },
       },
     };

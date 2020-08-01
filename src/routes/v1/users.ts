@@ -3,8 +3,9 @@ import { Record as OrbitRecord } from '@orbit/data';
 import { verify, hash } from 'argon2';
 import { pwnedPassword } from 'hibp';
 import { validate } from 'validate.js';
+import { DateTime } from 'luxon';
 
-import { User, UserToken } from '../../models';
+import { User, UserToken, RefreshToken } from '../../models';
 
 interface CreateUserRequest extends RequestGenericInterface {
   Body: {
@@ -45,10 +46,12 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       reply.status(400);
       return { errors: { password: ['Password is pwned'] } };
     } else if (await acceptUserWithCode(code)) {
-      const user = await User.query().insert({
-        email: email.toLowerCase(),
-        passwordHash: await hash(password),
-      });
+      const user = await User.query()
+        .insert({
+          email: email.toLowerCase(),
+          passwordHash: await hash(password),
+        })
+        .returning('*');
 
       reply.status(201);
       return { data: user.$toJsonApi() };
@@ -60,42 +63,56 @@ export default async function (fastify: FastifyInstance): Promise<void> {
   fastify.post<TokenRequest>('/token', async function (request, reply) {
     const { grant_type, username, password, refresh_token } = request.body;
 
-    let user: User | boolean;
-    switch (grant_type) {
-      case 'password':
-        user = await findUserWithPassword(username, password);
-        break;
-      case 'refresh_token':
-        user = await findUserByRefreshToken(refresh_token);
-        break;
-    }
+    if (grant_type === 'password') {
+      const user = await findUserWithPassword(username, password);
 
-    if (user) {
-      const day = 60 * 60 * 24;
-      const expiresIn = day * 7;
-      const access_token = fastify.jwt.sign(
-        { email: user.email },
-        { expiresIn, subject: user.id }
-      );
-      const refresh_token = 'tGzv3JOkF0XG5Qx2TlKWIA';
+      if (user) {
+        const refreshToken = await user
+          .$relatedQuery<RefreshToken>('refreshTokens')
+          .insert({
+            userAgent: request.headers['user-agent'],
+          })
+          .returning('*');
+        return generateAccessToken(fastify, user, refreshToken.token);
+      }
+    } else if (grant_type === 'refresh_token') {
+      const user = await findUserByRefreshToken(refresh_token);
 
-      return {
-        access_token,
-        token_type: 'bearer',
-        expires_in: expiresIn,
-        refresh_token,
-      };
+      if (user) {
+        return generateAccessToken(fastify, user);
+      }
     }
 
     reply.unauthorized();
   });
 
-  fastify.delete('/users/me', async function (request, reply) {
+  fastify.delete('/logout', async function (request, reply) {
     const user = await User.findByToken(request.user as UserToken);
-    await user.$destroy();
+    await user.$relatedQuery<RefreshToken>('refreshTokens').del();
 
-    reply.send(204);
+    reply.status(204);
   });
+
+  fastify.get(
+    '/user',
+    { preHandler: fastify.auth([async (request) => request.jwtVerify()]) },
+    async function (request) {
+      const user = await User.findByToken(request.user as UserToken);
+
+      return { data: user.$toJsonApi() };
+    }
+  );
+
+  fastify.delete(
+    '/user',
+    { preHandler: fastify.auth([async (request) => request.jwtVerify()]) },
+    async function (request, reply) {
+      const user = await User.findByToken(request.user as UserToken);
+      await user.$destroy();
+
+      reply.send(204);
+    }
+  );
 }
 
 async function findUserWithPassword(
@@ -104,7 +121,7 @@ async function findUserWithPassword(
 ): Promise<User | false> {
   const user = await User.query()
     .select('id', 'email', 'password_hash')
-    .findOne('email', username.toLowerCase());
+    .findOne(User.ref('email'), username.toLowerCase());
   if (user && (await verifyPassword(user.passwordHash, password))) {
     return user;
   }
@@ -114,7 +131,17 @@ async function findUserWithPassword(
 async function findUserByRefreshToken(
   refreshToken: string
 ): Promise<User | false> {
-  return false;
+  const token = await RefreshToken.query()
+    .throwIfNotFound()
+    .where(
+      RefreshToken.ref('created_at'),
+      '>',
+      DateTime.utc().minus({ year: 1 }).toJSDate()
+    )
+    .withGraphFetched('user')
+    .findOne(RefreshToken.ref('token'), refreshToken);
+
+  return token && token.user;
 }
 
 async function verifyPassword(hash: string, password: string) {
@@ -140,4 +167,28 @@ async function isBadPassword(password: string): Promise<boolean> {
   } catch {
     return true;
   }
+}
+
+function generateAccessToken(
+  fastify: FastifyInstance,
+  user: User,
+  refresh_token?: string
+) {
+  const access_token = fastify.jwt.sign(
+    { email: user.email },
+    { subject: user.id }
+  );
+
+  if (refresh_token) {
+    return {
+      access_token,
+      token_type: 'bearer',
+      refresh_token,
+    };
+  }
+
+  return {
+    access_token,
+    token_type: 'bearer',
+  };
 }

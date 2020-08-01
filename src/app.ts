@@ -21,7 +21,10 @@ export default async function (
   fastify.register(rateLimit);
   fastify.register(accepts);
   fastify.register(sensible);
-  fastify.register(jwt, { secret: process.env.AUTH_SECRET });
+  fastify.register(jwt, {
+    secret: process.env.AUTH_SECRET,
+    sign: { expiresIn: '60 days' },
+  });
   fastify.register(auth);
 
   // Do not touch the following lines
