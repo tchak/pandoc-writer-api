@@ -1,6 +1,8 @@
 import { test } from 'tap';
+import { readFileSync } from 'fs';
 
 import { build, request, login } from '../helper';
+import docSlateJson from '../files/doc-slate';
 
 test('get document', async (t) => {
   const app = await build(t);
@@ -275,4 +277,72 @@ test('patch document', async (t) => {
     authorization: `Bearer ${token}`,
   });
   t.equal(res.status, 200, 'GET /versions/:id should succeed with status 200');
+});
+
+test('import markdown document', async (t) => {
+  const app = await build(t);
+  const token = await login(app);
+
+  const md = '# Hello world\n\nLorem ipsum dolor sit amet.';
+  const data = [
+    { type: 'heading-one', children: [{ text: 'Hello world' }] },
+    {
+      type: 'paragraph',
+      children: [{ text: 'Lorem ipsum dolor sit amet.' }],
+    },
+  ];
+
+  let res = await request(app, '/v1/documents', 'POST', md, {
+    authorization: `Bearer ${token}`,
+    'content-type': 'text/markdown',
+  });
+  t.equal(res.status, 201, 'POST /documents should succeed with status 201');
+  const id = (res.body as any).data.id;
+
+  res = await request(
+    app,
+    `/v1/documents/${id}?fields[]=data`,
+    undefined,
+    undefined,
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
+  t.equal(res.status, 200, 'GET /documents:id should succeed with status 200');
+  t.deepEqual(
+    (res.body as any).data.attributes.data,
+    data,
+    'should return Slate AST'
+  );
+});
+
+test('import docx document', async (t) => {
+  const app = await build(t);
+  const token = await login(app);
+
+  const docx = readFileSync('./test/files/doc.docx');
+
+  let res = await request(app, '/v1/documents', 'POST', docx, {
+    authorization: `Bearer ${token}`,
+    'content-type':
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  });
+  t.equal(res.status, 201, 'POST /documents should succeed with status 201');
+  const id = (res.body as any).data.id;
+
+  res = await request(
+    app,
+    `/v1/documents/${id}?fields[]=data`,
+    undefined,
+    undefined,
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
+  t.equal(res.status, 200, 'GET /documents:id should succeed with status 200');
+  t.deepEqual(
+    (res.body as any).data.attributes.data,
+    docSlateJson,
+    'should return Slate AST'
+  );
 });

@@ -398,7 +398,7 @@ async function postrender(
 }
 
 export async function pandoc(
-  source: string,
+  source: string | Buffer,
   opts: Options = {}
 ): Promise<string | null> {
   const args = buildArgs(

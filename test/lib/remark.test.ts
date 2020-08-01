@@ -131,6 +131,59 @@ const slateAST = [
   },
 ];
 
+const slateASTWithHeadings = [
+  {
+    type: 'heading-one',
+    children: [
+      {
+        text: 'Heading 1',
+      },
+    ],
+  },
+  {
+    type: 'paragraph',
+    children: [
+      {
+        text: 'paragraph 1',
+      },
+    ],
+  },
+  {
+    type: 'heading-two',
+    children: [
+      {
+        text: 'Heading 2',
+      },
+    ],
+  },
+  {
+    type: 'paragraph',
+    children: [
+      {
+        text: 'paragraph 2',
+      },
+    ],
+  },
+];
+
+test('markdown with headings', (t) => {
+  remark()
+    .use(footnotes, { inlineNotes: true })
+    .use(plugin)
+    .process(
+      '# Heading 1\n\nparagraph 1\n\n## Heading 2\n\nparagraph 2',
+      function (err, file) {
+        if (err) throw err;
+        t.deepEqual(
+          file.data,
+          slateASTWithHeadings,
+          'should produce slate AST'
+        );
+        t.done();
+      }
+    );
+});
+
 test('markdown with footnotes', (t) => {
   remark()
     .use(footnotes, { inlineNotes: true })

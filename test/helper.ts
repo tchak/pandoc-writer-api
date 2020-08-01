@@ -53,7 +53,7 @@ async function request(
     url,
     method: method || 'GET',
     headers,
-    payload: body ? JSON.stringify(body) : undefined,
+    payload: prepareBody(headers, body),
   });
 
   const isJSON = headers.accept.match(/json/);
@@ -63,6 +63,16 @@ async function request(
     body: res.payload && isJSON ? JSON.parse(res.payload) : res.payload,
     headers: res.headers as Record<string, string>,
   };
+}
+
+function prepareBody(
+  headers: Record<string, string>,
+  body?: unknown
+): string | Buffer {
+  if (body && headers['content-type'].match(/json/)) {
+    return JSON.stringify(body);
+  }
+  return body as string | Buffer;
 }
 
 async function login(app: FastifyInstance, email?: string): Promise<string> {

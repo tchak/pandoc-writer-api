@@ -90,18 +90,6 @@ export default function deserialize(
     case 'footnoteDefinition':
       context.footnoteDefinitions[node.identifier] = children as BlockType[];
       return { type: 'paragraph', children: [{ text: '' }] };
-
-    case 'html':
-      if (node.value?.includes('<br>')) {
-        return {
-          break: true,
-          type: nodeTypes.paragraph,
-          children: [{ text: node.value?.replace(/<br>/g, '') || '' }],
-        };
-      }
-      // TODO: Handle other HTML?
-      return { type: 'parapgraph', children: [{ text: '' }] };
-
     case 'inlineCode':
       return {
         code: true,

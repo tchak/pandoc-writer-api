@@ -4,6 +4,9 @@ import {
   FastifyReply,
   FastifyRequest,
 } from 'fastify';
+import remark from 'remark';
+import footnotes from 'remark-footnotes';
+
 import { Record as OrbitRecord, RecordIdentity } from '@orbit/data';
 
 import {
@@ -14,11 +17,16 @@ import {
   UserToken,
 } from '../../models';
 import { pandoc } from '../../lib/pandoc';
-import { BlockType } from '../../lib/mdast-slate';
+import plugin, { BlockType } from '../../lib/mdast-slate';
 
 interface CreateDocumentRequest extends RequestGenericInterface {
-  Body: {
-    data: OrbitRecord;
+  Body:
+    | string
+    | {
+        data: OrbitRecord;
+      };
+  Querystring: {
+    title?: string;
   };
 }
 
@@ -103,13 +111,38 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     reply
   ) {
     const user = await User.findByToken(request.user as UserToken);
+
+    let title: string;
+    let markdown: string;
+    let data: BlockType[] = [];
+
+    switch (request.headers['content-type']) {
+      case 'text/markdown':
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        title = request.query.title || 'Imported Document';
+        markdown = request.body as string;
+        break;
+      case 'application/vnd.api+json':
+        title = (request.body as { data: OrbitRecord }).data.attributes.title;
+        break;
+    }
+
+    if (markdown) {
+      data = (
+        await remark()
+          .use(footnotes, { inlineNotes: true })
+          .use(plugin)
+          .process(markdown)
+      ).data as BlockType[];
+    }
+
     const document = await user
       .$relatedQuery<Document>('documents')
       .insertGraphAndFetch({
-        title: request.body.data.attributes.title,
+        title,
         versions: [
           {
-            data: [],
+            data,
           },
         ],
       });
@@ -133,7 +166,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
 
     await Document.transaction(async (trx) => {
       const query = user
-        .$relatedQuery<Document>('documents')
+        .$relatedQuery<Document>('documents', trx)
         .modify('kept')
         .findById(request.params.id);
       const document = await query.withGraphFetched('versions(last)');

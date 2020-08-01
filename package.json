@@ -12,7 +12,7 @@
     "routes": "yarn build:ts && fastify routes dist/app.js",
     "build:ts": "tsc",
     "lint": "eslint . --ext .ts",
-    "dev": "tsc && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\"  \"tsc -w\" \"fastify start -w -l info -P dist/app.js\"",
+    "dev": "tsc && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\"  \"tsc -w\" \"fastify start -w -l info -P dist/src/app.js\"",
     "db:migrate": "knex migrate:latest",
     "db:rollback": "knex migrate:rollback",
     "secret": "node bin/secret.js"
