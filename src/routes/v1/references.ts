@@ -26,6 +26,7 @@ interface CrawlReferenceRequest extends RequestGenericInterface {
 interface GetReferencesRequest extends RequestGenericInterface {
   Querystring: {
     fields?: string[];
+    q?: string;
   };
 }
 
@@ -84,7 +85,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const user = await User.findByToken(request.user as UserToken);
     const query = user
       .$relatedQuery<Reference>('references')
-      .modify('kept', false);
+      .modify('kept', false)
+      .modify('search', request.query.q);
+
     const references = await query;
 
     return {

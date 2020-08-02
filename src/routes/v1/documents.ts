@@ -97,6 +97,7 @@ interface GetDocumentReferencesRequest extends RequestGenericInterface {
   };
   Querystring: {
     fields?: string[];
+    q?: string;
   };
 }
 
@@ -344,7 +345,8 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         .findById(id);
       const query = document
         .$relatedQuery<Reference>('references')
-        .modify('kept', false);
+        .modify('kept', false)
+        .modify('search', request.query.q);
       const references = await query;
 
       return {

@@ -13,6 +13,11 @@ exports.up = async function (knex: Knex) {
       .onDelete('CASCADE')
       .index();
 
+    table.text('search_text');
+    table.specificType('search_config', 'regconfig').defaultTo('english');
+    table.specificType('search_tokens', 'tsvector');
+    table.index('search_tokens', null, 'gin');
+
     table.timestamp('created_at').defaultTo(knex.fn.now()).notNullable();
     table.timestamp('updated_at').defaultTo(knex.fn.now()).notNullable();
     table.timestamp('deleted_at').index();
@@ -35,6 +40,10 @@ exports.up = async function (knex: Knex) {
       .onDelete('CASCADE')
       .index();
   });
+
+  await knex.raw(
+    `CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE ON "references" FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger_column(search_tokens, search_config, search_text);`
+  );
 };
 
 exports.down = async function (knex: Knex) {

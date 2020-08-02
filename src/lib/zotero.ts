@@ -6,6 +6,8 @@ const SERVER_SECRET_KEY = process.env.TRANSLATION_SERVER_SECRET_KEY;
 export interface Item {
   id: string;
   type: string;
+  title: string;
+  abstract: string;
 }
 
 export async function searchByURL(url: string): Promise<Item[]> {

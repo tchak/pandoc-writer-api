@@ -1,4 +1,11 @@
-import { Model, JSONSchema, RelationMappings, Modifiers } from 'objection';
+import {
+  Model,
+  JSONSchema,
+  RelationMappings,
+  Modifiers,
+  QueryContext,
+  ModelOptions,
+} from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 
 import { BaseModel, Document, User } from '.';
@@ -21,6 +28,12 @@ export class Reference extends BaseModel {
 
         if (throwIfNotFound) {
           return builder.throwIfNotFound();
+        }
+        return builder;
+      },
+      search(builder, term?: string) {
+        if (term) {
+          builder.whereRaw('search_tokens @@ plainto_tsquery(?)', [term]);
         }
         return builder;
       },
@@ -65,6 +78,21 @@ export class Reference extends BaseModel {
   };
 
   data: Item;
+  searchText: string;
+
+  $beforeInsert(context: QueryContext): void {
+    super.$beforeInsert(context);
+    this.searchText = [this.data.title, this.data.abstract]
+      .filter((text) => text)
+      .join(' ');
+  }
+
+  $beforeUpdate(opt: ModelOptions, context: QueryContext): void {
+    super.$beforeUpdate(opt, context);
+    this.searchText = [this.data.title, this.data.abstract]
+      .filter((text) => text)
+      .join(' ');
+  }
 
   $toJsonApi(fields?: string[]): OrbitRecord {
     const { id, createdAt, updatedAt } = this;
