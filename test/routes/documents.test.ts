@@ -99,23 +99,6 @@ test('get formatted document', async (t) => {
   const app = await build(t);
   const token = await login(app);
 
-  let res = await request(
-    app,
-    '/v1/documents',
-    'POST',
-    {
-      data: {
-        attributes: {
-          title: 'hello',
-        },
-      },
-    },
-    {
-      authorization: `Bearer ${token}`,
-    }
-  );
-  const id = (res.body as any).data.id;
-  const etag = res.headers.etag;
   const data = [
     { type: 'heading-one', children: [{ text: 'Hello' }] },
     {
@@ -129,45 +112,62 @@ test('get formatted document', async (t) => {
   ];
   const html =
     '<h1 id="hello">Hello</h1>\n<p>Lorem <strong>ipsum</strong> delor</p>\n';
-  const markdown = '# Hello\nLorem **ipsum** delor\n';
+  const markdown = '# Hello\n\nLorem **ipsum** delor\n';
+  const text = 'Hello\n\nLorem ipsum delor\n';
 
-  await request(
+  let res = await request(
     app,
-    `/v1/documents/${id}`,
-    'PATCH',
+    '/v1/documents',
+    'POST',
     {
       data: {
         attributes: {
+          title: 'hello',
           data,
         },
       },
     },
-    { ['if-match']: etag, authorization: `Bearer ${token}` }
+    {
+      authorization: `Bearer ${token}`,
+    }
   );
+  const id = (res.body as any).data.id;
 
   res = await request(app, `/v1/documents/${id}`, 'GET', undefined, {
     accept: 'text/html',
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.body, html);
+  t.equal(res.body, html, 'should return html');
 
   res = await request(app, `/v1/documents/${id}.html`, 'GET', undefined, {
     accept: '',
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.body, html);
+  t.equal(res.body, html, 'should return html');
 
   res = await request(app, `/v1/documents/${id}`, 'GET', undefined, {
     accept: 'text/markdown',
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.body, markdown);
+  t.equal(res.body, markdown, 'should return markdown');
 
   res = await request(app, `/v1/documents/${id}.md`, 'GET', undefined, {
     accept: '',
     authorization: `Bearer ${token}`,
   });
-  t.equal(res.body, markdown);
+  t.equal(res.body, markdown, 'should return markdown');
+
+  res = await request(app, `/v1/documents/${id}`, 'GET', undefined, {
+    accept: 'text/plain',
+    authorization: `Bearer ${token}`,
+  });
+  t.equal(res.body, text, 'should return text');
+
+  res = await request(app, `/v1/documents/${id}.txt`, 'GET', undefined, {
+    accept: '',
+    authorization: `Bearer ${token}`,
+  });
+  t.equal(res.body, text, 'should return text');
 });
 
 test('patch document', async (t) => {

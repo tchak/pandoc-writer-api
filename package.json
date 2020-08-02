@@ -54,6 +54,7 @@
     "remark": "^12.0.1",
     "remark-footnotes": "^1.0.0",
     "remark-preset-lint-recommended": "^4.0.1",
+    "strip-markdown": "^3.1.2",
     "validate.js": "^0.13.1",
     "vfile-reporter": "^6.0.1"
   },

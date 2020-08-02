@@ -13,6 +13,7 @@ const isLeafNode = (node: BlockType | LeafType): node is LeafType => {
 };
 
 const BREAK_TAG = '<br>';
+const CODE = '```';
 
 export default function serialize(
   chunk: BlockType | LeafType,
@@ -139,17 +140,17 @@ export default function serialize(
 
   switch (type) {
     case nodeTypes.heading[1]:
-      return `# ${children}\n`;
+      return `# ${children}\n\n`;
     case nodeTypes.heading[2]:
-      return `## ${children}\n`;
+      return `## ${children}\n\n`;
     case nodeTypes.heading[3]:
-      return `### ${children}\n`;
+      return `### ${children}\n\n`;
     case nodeTypes.heading[4]:
-      return `#### ${children}\n`;
+      return `#### ${children}\n\n`;
     case nodeTypes.heading[5]:
-      return `##### ${children}\n`;
+      return `##### ${children}\n\n`;
     case nodeTypes.heading[6]:
-      return `###### ${children}\n`;
+      return `###### ${children}\n\n`;
 
     case nodeTypes.blockquote:
       // For some reason, marked is parsing blockquotes w/ one new line
@@ -182,7 +183,7 @@ export default function serialize(
       return `${children}\n`;
 
     case nodeTypes.code:
-      return `${children}\n`;
+      return `${CODE}\n${children}\n${CODE}\n`;
 
     default:
       return escapeHtml(children);

@@ -91,6 +91,10 @@ export class Document extends BaseModel {
     return this.versions[0].markdown;
   }
 
+  get text(): string {
+    return this.versions[0].text;
+  }
+
   get report(): string {
     return this.versions[0].report;
   }

@@ -124,7 +124,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         markdown = request.body as string;
         break;
       case 'application/vnd.api+json':
-        title = (request.body as { data: OrbitRecord }).data.attributes.title;
+        ({ title, data } = (request.body as {
+          data: OrbitRecord;
+        }).data.attributes);
         break;
     }
 
@@ -243,6 +245,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         reply.header('etag', document.sha);
         reply.type('application/vnd.api+json');
         return { data: document.$toJsonApi(fields) };
+      case 'text':
+      case 'text/plain':
+        return renderDocument(document, 'text', reply);
       case 'markdown':
       case 'md':
         return renderDocument(document, 'md', reply);
@@ -363,6 +368,7 @@ const ACCEPTS = [
   'pdf',
   'docx',
   'application/vnd.api+json',
+  'text/plain',
 ];
 
 function accepts(
@@ -372,6 +378,8 @@ function accepts(
   format = format || request.accepts().type(ACCEPTS);
   if (format === 'application/vnd.api+json') {
     return 'json';
+  } else if (format === 'txt') {
+    return 'text';
   }
   return format;
 }
@@ -385,6 +393,9 @@ async function renderDocument(
     case 'md':
       reply.type('text/markdown');
       return document.markdown;
+    case 'text':
+      reply.type('text/plain');
+      return document.text;
     case 'html':
       reply.type('text/html');
       return pandoc(document.markdownWithFrontmatter, {

@@ -11,6 +11,7 @@ import crypto from 'crypto';
 import remark from 'remark';
 import lint from 'remark-preset-lint-recommended';
 import report from 'vfile-reporter';
+import strip from 'strip-markdown';
 
 import { BlockType, serialize } from '../lib/mdast-slate';
 import { BaseModel, Document } from '.';
@@ -80,6 +81,10 @@ export class DocumentVersion extends BaseModel {
 
   get markdown(): string {
     return this.data.map((b) => serialize(b)).join('');
+  }
+
+  get text(): string {
+    return remark().use(strip).processSync(this.markdown).toString();
   }
 
   get report(): string {
