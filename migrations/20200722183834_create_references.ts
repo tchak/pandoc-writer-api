@@ -4,6 +4,7 @@ exports.up = async function (knex: Knex) {
   await knex.schema.createTable('references', (table) => {
     table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
     table.jsonb('data').notNullable();
+    table.string('language').notNullable().defaultTo('en');
 
     table
       .uuid('user_id')

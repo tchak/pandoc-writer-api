@@ -27,6 +27,7 @@ interface CreateDocumentRequest extends RequestGenericInterface {
       };
   Querystring: {
     title?: string;
+    language?: string;
   };
 }
 
@@ -114,6 +115,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const user = await User.findByToken(request.user as UserToken);
 
     let title: string;
+    let language: string;
     let markdown: string;
     let data: BlockType[] = [];
 
@@ -121,12 +123,16 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       case 'text/markdown':
       case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         title = request.query.title || 'Imported Document';
+        language = request.query.language || 'en';
         markdown = request.body as string;
         break;
       case 'application/vnd.api+json':
-        ({ title, data } = (request.body as {
+        const attributes = (request.body as {
           data: OrbitRecord;
-        }).data.attributes);
+        }).data.attributes;
+        title = attributes.title;
+        language = attributes.language || 'en';
+        data = attributes.data || [];
         break;
     }
 
@@ -143,6 +149,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       .$relatedQuery<Document>('documents')
       .insertGraphAndFetch({
         title,
+        language,
         versions: [
           {
             data,
@@ -159,8 +166,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const { title, meta, data } = request.body.data.attributes as {
-      title: string;
+    const { title, meta, data, language } = request.body.data.attributes as {
+      title?: string;
+      language?: string;
       meta: Record<string, string>;
       data: BlockType[];
     };
@@ -177,7 +185,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       if (title) {
         await query.patch({ title });
       }
-
+      if (language) {
+        await query.patch({ language });
+      }
       if (meta) {
         await query.patch({
           meta: mapKeys(meta, (key) => `meta:${key}`),

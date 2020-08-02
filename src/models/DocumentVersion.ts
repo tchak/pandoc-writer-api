@@ -95,15 +95,18 @@ export class DocumentVersion extends BaseModel {
   sha: string;
   data: BlockType[];
   documentId: string;
+  searchText: string;
 
   $beforeInsert(context: QueryContext): void {
     super.$beforeInsert(context);
     this.sha = sha1(JSON.stringify(this.data));
+    this.searchText = this.text;
   }
 
   $beforeUpdate(opt: ModelOptions, context: QueryContext): void {
     super.$beforeUpdate(opt, context);
     this.sha = sha1(JSON.stringify(this.data));
+    this.searchText = this.text;
   }
 
   $toJsonApi(fields?: string[]): OrbitRecord {

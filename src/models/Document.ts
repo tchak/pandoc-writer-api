@@ -1,4 +1,11 @@
-import { Model, RelationMappings, JSONSchema, Modifiers } from 'objection';
+import {
+  Model,
+  RelationMappings,
+  JSONSchema,
+  Modifiers,
+  ModelOptions,
+  QueryContext,
+} from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
 import remark from 'remark';
@@ -72,6 +79,7 @@ export class Document extends BaseModel {
     properties: {
       id: { type: 'string' },
       title: { type: 'string', minLength: 1 },
+      language: { type: 'string' },
       createdAt: { type: 'date-time' },
       updatedAt: { type: 'date-time' },
     },
@@ -114,9 +122,11 @@ export class Document extends BaseModel {
   }
 
   title: string;
+  language: string;
   meta: Record<string, string>;
   versions: DocumentVersion[];
   references: Reference[];
+  searchText: string;
 
   async patchDocumentVersion(
     data: BlockType[],
@@ -144,6 +154,16 @@ export class Document extends BaseModel {
       await lastVersion.$query().patch({ data });
       return lastVersion;
     }
+  }
+
+  $beforeInsert(context: QueryContext): void {
+    super.$beforeInsert(context);
+    this.searchText = this.title;
+  }
+
+  $beforeUpdate(opt: ModelOptions, context: QueryContext): void {
+    super.$beforeUpdate(opt, context);
+    this.searchText = this.title;
   }
 
   $toJsonApi(fields?: string[]): OrbitRecord {

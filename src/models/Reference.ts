@@ -78,6 +78,7 @@ export class Reference extends BaseModel {
   };
 
   data: Item;
+  language: string;
   searchText: string;
 
   $beforeInsert(context: QueryContext): void {
