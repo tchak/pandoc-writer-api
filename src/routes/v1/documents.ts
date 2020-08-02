@@ -7,8 +7,6 @@ import {
 import remark from 'remark';
 import footnotes from 'remark-footnotes';
 
-import { Record as OrbitRecord, RecordIdentity } from '@orbit/data';
-
 import {
   User,
   Document,
@@ -19,12 +17,18 @@ import {
 import { pandoc } from '../../lib/pandoc';
 import plugin, { BlockType } from '../../lib/mdast-slate';
 
+interface CreateDocumentBody {
+  data: {
+    attributes: {
+      title: string;
+      language?: string;
+      data?: BlockType[];
+    };
+  };
+}
+
 interface CreateDocumentRequest extends RequestGenericInterface {
-  Body:
-    | string
-    | {
-        data: OrbitRecord;
-      };
+  Body: string | CreateDocumentBody;
   Querystring: {
     title?: string;
     language?: string;
@@ -39,7 +43,14 @@ interface UpdateDocumentRequest extends RequestGenericInterface {
     'if-match': string;
   };
   Body: {
-    data: OrbitRecord;
+    data: {
+      attributes: {
+        title?: string;
+        language?: string;
+        data?: BlockType[];
+        meta?: Record<string, string>;
+      };
+    };
   };
 }
 
@@ -70,7 +81,7 @@ interface AddDocumentReferencesRequest extends RequestGenericInterface {
     id: string;
   };
   Body: {
-    data: RecordIdentity[];
+    data: { id: string }[];
   };
 }
 
@@ -79,7 +90,7 @@ interface RemoveDocumentReferencesRequest extends RequestGenericInterface {
     id: string;
   };
   Body: {
-    data: RecordIdentity[];
+    data: { id: string }[];
   };
 }
 
@@ -127,9 +138,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         markdown = request.body as string;
         break;
       case 'application/vnd.api+json':
-        const attributes = (request.body as {
-          data: OrbitRecord;
-        }).data.attributes;
+        const attributes = (request.body as CreateDocumentBody).data.attributes;
         title = attributes.title;
         language = attributes.language || 'en';
         data = attributes.data || [];
@@ -166,12 +175,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const { title, meta, data, language } = request.body.data.attributes as {
-      title?: string;
-      language?: string;
-      meta: Record<string, string>;
-      data: BlockType[];
-    };
+    const { title, meta, data, language } = request.body.data.attributes;
     const etag = request.headers['if-match'];
     const user = await User.findByToken(request.user as UserToken);
 

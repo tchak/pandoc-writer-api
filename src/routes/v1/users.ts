@@ -1,5 +1,4 @@
 import { FastifyInstance, RequestGenericInterface } from 'fastify';
-import { Record as OrbitRecord } from '@orbit/data';
 import { verify, hash } from 'argon2';
 import { pwnedPassword } from 'hibp';
 import { validate } from 'validate.js';
@@ -9,7 +8,13 @@ import { User, UserToken, RefreshToken } from '../../models';
 
 interface CreateUserRequest extends RequestGenericInterface {
   Body: {
-    data: OrbitRecord;
+    data: {
+      attributes: {
+        email: string;
+        password: string;
+        code: string;
+      };
+    };
   };
 }
 

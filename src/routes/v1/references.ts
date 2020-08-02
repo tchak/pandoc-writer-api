@@ -1,12 +1,15 @@
 import { FastifyInstance, RequestGenericInterface } from 'fastify';
-import { Record as OrbitRecord } from '@orbit/data';
 
 import { searchByURL, searchByIdentifier, Item } from '../../lib/zotero';
 import { User, Reference, UserToken } from '../../models';
 
 interface CreateReferenceRequest extends RequestGenericInterface {
   Body: {
-    data: OrbitRecord;
+    data: {
+      attributes: {
+        data: Item;
+      };
+    };
   };
 }
 
