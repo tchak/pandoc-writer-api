@@ -11,6 +11,18 @@ interface GetVersionRequest extends RequestGenericInterface {
   };
 }
 
+interface CreateVersionRequest extends RequestGenericInterface {
+  Body: {
+    data: {
+      relationships: {
+        document: {
+          data: { id: string };
+        };
+      };
+    };
+  };
+}
+
 interface DestroyVersionRequest extends RequestGenericInterface {
   Params: {
     id: string;
@@ -22,6 +34,26 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     'preHandler',
     fastify.auth([async (request) => request.jwtVerify()])
   );
+
+  fastify.post<CreateVersionRequest>('/versions', async function (
+    request,
+    reply
+  ) {
+    const user = await User.findByToken(request.user as UserToken);
+    const document = await user
+      .$relatedQuery<Document>('documents')
+      .modify('kept')
+      .withGraphFetched('versions(last)')
+      .findById(request.body.data.relationships.document.data.id);
+    const version = await document
+      .$relatedQuery<DocumentVersion>('versions')
+      .insertAndFetch({
+        data: document.data,
+      });
+
+    reply.status(201);
+    return { data: version.$toJsonApi() };
+  });
 
   fastify.get<GetVersionRequest>('/versions/:id', async function (request) {
     const {

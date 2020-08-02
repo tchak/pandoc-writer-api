@@ -277,6 +277,43 @@ test('patch document', async (t) => {
     authorization: `Bearer ${token}`,
   });
   t.equal(res.status, 200, 'GET /versions/:id should succeed with status 200');
+
+  res = await request(
+    app,
+    `/v1/versions`,
+    'POST',
+    {
+      data: {
+        relationships: {
+          document: {
+            data: {
+              id,
+            },
+          },
+        },
+      },
+    },
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
+  t.equal(res.status, 201, 'POST /versions should succeed with status 201');
+
+  res = await request(
+    app,
+    `/v1/documents/${id}/versions`,
+    undefined,
+    undefined,
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
+  t.equal(
+    res.status,
+    200,
+    'GET /documents/:id/versions should succeed with status 200'
+  );
+  t.equal((res.body as any).data.length, 2);
 });
 
 test('import markdown document', async (t) => {
