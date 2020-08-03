@@ -28,6 +28,7 @@ interface CrawlReferenceRequest extends RequestGenericInterface {
 
 interface GetReferencesRequest extends RequestGenericInterface {
   Querystring: {
+    order?: string;
     fields?: string[];
     q?: string;
   };
@@ -85,29 +86,28 @@ export default async function (fastify: FastifyInstance): Promise<void> {
   });
 
   fastify.get<GetReferencesRequest>('/references', async function (request) {
+    const {
+      query: { order, q, fields },
+    } = request;
+
     const user = await User.findByToken(request.user as UserToken);
-    const query = user
+    const references = await user
       .$relatedQuery<Reference>('references')
       .modify('kept', false)
-      .modify('search', request.query.q);
-
-    const references = await query;
+      .modify('search', q)
+      .modify('order', order);
 
     return {
-      data: references.map((reference) =>
-        reference.$toJsonApi(request.query.fields)
-      ),
+      data: references.map((reference) => reference.$toJsonApi(fields)),
     };
   });
 
   fastify.get<GetReferenceRequest>('/references/:id', async function (request) {
     const user = await User.findByToken(request.user as UserToken);
-    const query = user
+    const reference = await user
       .$relatedQuery<Reference>('references')
       .modify('kept')
       .findById(request.params.id);
-
-    const reference = await query;
 
     return { data: reference.$toJsonApi(request.query.fields) };
   });
@@ -117,12 +117,12 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     reply
   ) {
     const user = await User.findByToken(request.user as UserToken);
-    const query = user
+    const reference = await user
       .$relatedQuery<Reference>('references')
       .modify('kept')
       .findById(request.params.id);
 
-    await (await query).$destroy();
+    await reference.$destroy();
 
     reply.status(204);
   });

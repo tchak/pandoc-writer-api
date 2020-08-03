@@ -62,8 +62,7 @@ interface DestroyDocumentRequest extends RequestGenericInterface {
 
 interface GetDocumentsRequest extends RequestGenericInterface {
   Querystring: {
-    order?: 'created_at' | 'updated_at';
-    filter?: string[];
+    order?: string;
   };
 }
 
@@ -99,6 +98,7 @@ interface GetDocumentVersionsRequest extends RequestGenericInterface {
     id: string;
   };
   Querystring: {
+    order?: string;
     fields?: string[];
   };
 }
@@ -108,6 +108,7 @@ interface GetDocumentReferencesRequest extends RequestGenericInterface {
     id: string;
   };
   Querystring: {
+    order?: string;
     fields?: string[];
     q?: string;
   };
@@ -211,27 +212,26 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const user = await User.findByToken(request.user as UserToken);
-    const query = user
-      .$relatedQuery<Document>('documents')
-      .modify('kept')
-      .findById(request.params.id);
-    await (await query).$destroy();
+    const {
+      params: { id },
+    } = request;
+
+    const document = await User.findDocument(request.user as UserToken, id);
+    await document.$destroy();
 
     reply.status(204);
   });
 
   fastify.get<GetDocumentsRequest>('/documents', async function (request) {
     const {
-      query: { order = 'created_at' },
+      query: { order },
     } = request;
 
     const user = await User.findByToken(request.user as UserToken);
-    const query = user
+    const documents = await user
       .$relatedQuery<Document>('documents')
       .modify('kept', false)
-      .orderBy(order);
-    const documents = await query;
+      .modify('order', order);
 
     return { data: documents.map((document) => document.$toJsonApi()) };
   });
@@ -246,13 +246,11 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     } = request;
     const [id, format] = idWithFormat.split('.');
 
-    const user = await User.findByToken(request.user as UserToken);
-    const query = user
-      .$relatedQuery<Document>('documents')
-      .modify('kept')
-      .findById(id)
-      .withGraphFetched('versions(last)');
-    const document = await query;
+    const document = await User.findDocument(
+      request.user as UserToken,
+      id,
+      true
+    );
 
     switch (accepts(request, format)) {
       case 'json':
@@ -284,12 +282,13 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         params: { id },
         body: { data },
       } = request;
-      const ids = data.map(({ id }) => id);
       const user = await User.findByToken(request.user as UserToken);
       const document = await user
         .$relatedQuery<Document>('documents')
         .modify('kept')
         .findById(id);
+
+      const ids = data.map(({ id }) => id);
       const references = await user
         .$relatedQuery<Reference>('references')
         .modify('kept')
@@ -308,13 +307,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         params: { id },
         body: { data },
       } = request;
-      const ids = data.map(({ id }) => id);
-      const user = await User.findByToken(request.user as UserToken);
-      const document = await user
-        .$relatedQuery<Document>('documents')
-        .modify('kept')
-        .findById(id);
+      const document = await User.findDocument(request.user as UserToken, id);
 
+      const ids = data.map(({ id }) => id);
       await document
         .$relatedQuery<Reference>('references')
         .modify('kept')
@@ -330,19 +325,15 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     async function (request) {
       const {
         params: { id },
-        query: { fields },
+        query: { fields, order },
       } = request;
 
-      const user = await User.findByToken(request.user as UserToken);
-      const document = await user
-        .$relatedQuery<Document>('documents')
-        .modify('kept')
-        .findById(id);
-      const query = document
+      const document = await User.findDocument(request.user as UserToken, id);
+
+      const versions = await document
         .$relatedQuery<DocumentVersion>('versions')
-        .orderBy(DocumentVersion.ref('created_at'), 'DESC')
-        .modify('kept', false);
-      const versions = await query;
+        .modify('kept', false)
+        .modify('order', order);
 
       return {
         data: versions.map((version) => version.$toJsonApi(fields)),
@@ -355,20 +346,16 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     async function (request) {
       const {
         params: { id },
-        query: { fields },
+        query: { fields, order, q },
       } = request;
 
-      const user = await User.findByToken(request.user as UserToken);
-      const document = await user
-        .$relatedQuery<Document>('documents')
-        .modify('kept')
-        .findById(id);
-      const query = document
+      const document = await User.findDocument(request.user as UserToken, id);
+
+      const references = await document
         .$relatedQuery<Reference>('references')
-        .orderBy(Reference.ref('created_at'), 'DESC')
         .modify('kept', false)
-        .modify('search', request.query.q);
-      const references = await query;
+        .modify('order', order)
+        .modify('search', q);
 
       return {
         data: references.map((reference) => reference.$toJsonApi(fields)),

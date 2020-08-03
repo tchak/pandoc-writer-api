@@ -5,6 +5,8 @@ import {
   Modifiers,
   ModelOptions,
   QueryContext,
+  ColumnRef,
+  OrderByDirection,
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import crypto from 'crypto';
@@ -76,6 +78,10 @@ export class DocumentVersion extends BaseModel {
         }
         return builder;
       },
+      order(builder, order) {
+        const [column, direction] = orderBy(order);
+        return builder.orderBy(column, direction);
+      },
     };
   }
 
@@ -135,5 +141,21 @@ export class DocumentVersion extends BaseModel {
       attributes,
       relationships,
     };
+  }
+}
+
+function orderBy(
+  order?: 'created-at' | '-created-at' | 'updated-at' | '-updated-at'
+): [ColumnRef, OrderByDirection] {
+  switch (order) {
+    case 'updated-at':
+      return [DocumentVersion.ref('updated_at'), 'ASC'];
+    case '-updated-at':
+      return [DocumentVersion.ref('updated_at'), 'DESC'];
+    case 'created-at':
+      return [DocumentVersion.ref('created_at'), 'ASC'];
+    case '-created-at':
+    default:
+      return [DocumentVersion.ref('created_at'), 'DESC'];
   }
 }

@@ -96,4 +96,21 @@ export class User extends BaseModel {
       .select('id', 'email')
       .findById(token.sub);
   }
+
+  static async findDocument(
+    token: UserToken,
+    id: string,
+    withCurrentVersion = false
+  ): Promise<Document> {
+    const user = await this.findByToken(token);
+    const query = user
+      .$relatedQuery<Document>('documents')
+      .modify('kept')
+      .findById(id);
+
+    if (withCurrentVersion) {
+      return query.withGraphFetched('versions(last)');
+    }
+    return query;
+  }
 }

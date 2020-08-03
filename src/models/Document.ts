@@ -5,6 +5,8 @@ import {
   Modifiers,
   ModelOptions,
   QueryContext,
+  OrderByDirection,
+  ColumnRef,
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
@@ -34,6 +36,10 @@ export class Document extends BaseModel {
           return builder.throwIfNotFound();
         }
         return builder;
+      },
+      order(builder, order) {
+        const [column, direction] = orderBy(order);
+        return builder.orderBy(column, direction);
       },
     };
   }
@@ -204,5 +210,21 @@ export class Document extends BaseModel {
         },
       ],
     });
+  }
+}
+
+function orderBy(
+  order?: 'created-at' | '-created-at' | 'updated-at' | '-updated-at'
+): [ColumnRef, OrderByDirection] {
+  switch (order) {
+    case 'updated-at':
+      return [Document.ref('updated_at'), 'ASC'];
+    case '-updated-at':
+      return [Document.ref('updated_at'), 'DESC'];
+    case 'created-at':
+      return [Document.ref('created_at'), 'ASC'];
+    case '-created-at':
+    default:
+      return [Document.ref('created_at'), 'DESC'];
   }
 }

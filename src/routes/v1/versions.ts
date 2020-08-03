@@ -39,12 +39,11 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const user = await User.findByToken(request.user as UserToken);
-    const document = await user
-      .$relatedQuery<Document>('documents')
-      .modify('kept')
-      .withGraphFetched('versions(last)')
-      .findById(request.body.data.relationships.document.data.id);
+    const document = await User.findDocument(
+      request.user as UserToken,
+      request.body.data.relationships.document.data.id,
+      true
+    );
     const version = await document
       .$relatedQuery<DocumentVersion>('versions')
       .insertAndFetch({

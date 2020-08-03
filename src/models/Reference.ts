@@ -5,6 +5,8 @@ import {
   Modifiers,
   QueryContext,
   ModelOptions,
+  OrderByDirection,
+  ColumnRef,
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 
@@ -30,6 +32,10 @@ export class Reference extends BaseModel {
           return builder.throwIfNotFound();
         }
         return builder;
+      },
+      order(builder, order) {
+        const [column, direction] = orderBy(order);
+        return builder.orderBy(column, direction);
       },
       search(builder, term?: string) {
         if (term) {
@@ -111,5 +117,21 @@ export class Reference extends BaseModel {
       type: 'references',
       attributes,
     };
+  }
+}
+
+function orderBy(
+  order?: 'created-at' | '-created-at' | 'updated-at' | '-updated-at'
+): [ColumnRef, OrderByDirection] {
+  switch (order) {
+    case 'updated-at':
+      return [Reference.ref('updated_at'), 'ASC'];
+    case '-updated-at':
+      return [Reference.ref('updated_at'), 'DESC'];
+    case 'created-at':
+      return [Reference.ref('created_at'), 'ASC'];
+    case '-created-at':
+    default:
+      return [Reference.ref('created_at'), 'DESC'];
   }
 }
