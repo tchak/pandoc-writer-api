@@ -224,6 +224,7 @@ test('patch document', async (t) => {
     { ['if-match']: etag, authorization: `Bearer ${token}` }
   );
   t.equal(res.status, 204);
+  const latestEtag = res.headers.etag;
 
   data = [{ type: 'paragraph', children: [{ text: 'hello' }] }];
   res = await request(
@@ -298,6 +299,7 @@ test('patch document', async (t) => {
     }
   );
   t.equal(res.status, 201, 'POST /versions should succeed with status 201');
+  const newVersionId = (res.body as any).data.id;
 
   res = await request(
     app,
@@ -314,6 +316,55 @@ test('patch document', async (t) => {
     'GET /documents/:id/versions should succeed with status 200'
   );
   t.equal((res.body as any).data.length, 2);
+  t.equal((res.body as any).data[0].id, newVersionId);
+  t.equal((res.body as any).data[1].id, version.id);
+
+  data = [
+    { type: 'paragraph', children: [{ text: 'hello world!' }] },
+    { type: 'paragraph', children: [{ text: 'a new version!' }] },
+  ];
+  res = await request(
+    app,
+    `/v1/documents/${id}`,
+    'PATCH',
+    {
+      data: {
+        attributes: {
+          data,
+        },
+      },
+    },
+    { ['if-match']: latestEtag, authorization: `Bearer ${token}` }
+  );
+  t.equal(
+    res.status,
+    204,
+    'PATCH /documents/:id should succeed with status 204'
+  );
+
+  res = await request(
+    app,
+    `/v1/documents/${id}?fields[]=data`,
+    undefined,
+    undefined,
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
+  t.equal(res.status, 200, 'GET /documents/:id should succeed with status 200');
+  t.deepEqual((res.body as any).data.attributes.data, data);
+
+  res = await request(
+    app,
+    `/v1/versions/${newVersionId}?fields[]=data`,
+    undefined,
+    undefined,
+    {
+      authorization: `Bearer ${token}`,
+    }
+  );
+  t.equal(res.status, 200, 'GET /versions/:id should succeed with status 200');
+  t.deepEqual((res.body as any).data.attributes.data, data);
 });
 
 test('import markdown document', async (t) => {

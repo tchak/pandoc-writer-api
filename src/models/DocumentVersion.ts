@@ -61,7 +61,7 @@ export class DocumentVersion extends BaseModel {
       ...super.modifiers,
       last(builder) {
         const { ref } = DocumentVersion;
-        builder.orderBy(ref('created_at')).limit(1);
+        builder.orderBy(ref('created_at'), 'DESC').limit(1);
       },
       deleted(builder) {
         const { ref } = DocumentVersion;

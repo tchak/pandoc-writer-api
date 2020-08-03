@@ -340,7 +340,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         .findById(id);
       const query = document
         .$relatedQuery<DocumentVersion>('versions')
-        .orderBy(DocumentVersion.ref('created_at'))
+        .orderBy(DocumentVersion.ref('created_at'), 'DESC')
         .modify('kept', false);
       const versions = await query;
 
@@ -365,7 +365,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         .findById(id);
       const query = document
         .$relatedQuery<Reference>('references')
-        .orderBy(Reference.ref('created_at'))
+        .orderBy(Reference.ref('created_at'), 'DESC')
         .modify('kept', false)
         .modify('search', request.query.q);
       const references = await query;
