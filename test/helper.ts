@@ -78,7 +78,7 @@ function prepareBody(
 async function login(app: FastifyInstance, email?: string): Promise<string> {
   const password = nanoid();
   email = email || `${nanoid()}@test.com`;
-  await request(app, '/v1/users', 'POST', {
+  await request(app, '/v1/user', 'POST', {
     data: {
       type: 'users',
       attributes: {
@@ -88,7 +88,7 @@ async function login(app: FastifyInstance, email?: string): Promise<string> {
     },
   });
 
-  const { body } = await request(app, '/v1/token', 'POST', {
+  const { body } = await request(app, '/token', 'POST', {
     grant_type: 'password',
     username: email,
     password,
