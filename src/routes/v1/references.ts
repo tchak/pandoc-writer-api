@@ -1,13 +1,18 @@
 import { FastifyInstance, RequestGenericInterface } from 'fastify';
 
 import { searchByURL, searchByIdentifier, Item } from '../../lib/zotero';
-import { User, Reference, UserToken } from '../../models';
+import { User, Reference, Document, UserToken } from '../../models';
 
 interface CreateReferenceRequest extends RequestGenericInterface {
   Body: {
     data: {
       attributes: {
         data: Item;
+      };
+      relationships?: {
+        documents: {
+          data: { id: string }[];
+        };
       };
     };
   };
@@ -53,11 +58,19 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const { data } = request.body.data.attributes;
+    const {
+      attributes: { data },
+      relationships,
+    } = request.body.data;
     const user = await User.findByToken(request.user as UserToken);
     const reference = await user.$relatedQuery<Reference>('references').insert({
       data,
     });
+
+    if (relationships) {
+      const ids = relationships.documents.data.map(({ id }) => id);
+      await reference.$relatedQuery<Document>('documents').relate(ids);
+    }
 
     reply.status(201);
     return { data: reference.$toJsonApi() };
