@@ -16,7 +16,7 @@ export default async function (
 ): Promise<void> {
   // Place here your custom code!
   fastify.register(helmet);
-  fastify.register(cors);
+  fastify.register(cors, { exposedHeaders: 'etag' });
   fastify.register(favicon);
   fastify.register(rateLimit);
   fastify.register(accepts);
