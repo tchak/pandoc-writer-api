@@ -267,10 +267,10 @@
   dependencies:
     "@orbit/utils" "^0.17.0-beta.4"
 
-"@orbit/data@^0.17.0-beta.4":
-  version "0.17.0-beta.4"
-  resolved "https://registry.yarnpkg.com/@orbit/data/-/data-0.17.0-beta.4.tgz#e90f138b41412499735daa1ce5223ec99689c3ce"
-  integrity sha512-nEWCqyMmC7Dg/WbGPy0GGqYKLl3zfOgab34JSpIscMGf/t68VKKT3RtyRd4CNvzI6q61Z3zAFG5X+6j+u0sg/A==
+"@orbit/data@^0.17.0-beta.6":
+  version "0.17.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@orbit/data/-/data-0.17.0-beta.6.tgz#b33aecc7d4ebe9eeb3f3d86cb2eac1a5236d688b"
+  integrity sha512-KUVhdQmyC9BYPvH6pqvYbWnF2T8yiU4v58GQj5GMSIH0BRHMKbrXvdUf0VSHuMVOt9nqnH9M8utPHrjfZb6T5A==
   dependencies:
     "@orbit/core" "^0.17.0-beta.4"
     "@orbit/utils" "^0.17.0-beta.4"
@@ -731,10 +731,10 @@ avvio@^7.1.2:
     fastq "^1.6.1"
     queue-microtask "^1.1.2"
 
-aws-sdk@^2.726.0:
-  version "2.726.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.726.0.tgz#075aae1922e67e21285abae1bb081252cff4fec3"
-  integrity sha512-QRQ7MaW5dprdr/T3vCTC+J8TeUfpM45yWsBuATPcCV/oO8afFHVySwygvGLY4oJuo5Mf4mJn3+JYTquo6CqiaA==
+aws-sdk@^2.728.0:
+  version "2.728.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.728.0.tgz#381805dcac7835b5686694e9468d104595bfce42"
+  integrity sha512-pUVSxb+04urr6BMHg32Op+kT1IWGmwbelrQKMdLnvgcgysmBu1P4XbGBg8/SmAXWfuqqWjz8YnmFNY46VJE43A==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -1226,10 +1226,10 @@ concat-map@0.0.1:
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=
 
-concurrently@^5.1.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/concurrently/-/concurrently-5.2.0.tgz#ead55121d08a0fc817085584c123cedec2e08975"
-  integrity sha512-XxcDbQ4/43d6CxR7+iV8IZXhur4KbmEJk1CetVMUqCy34z9l0DkszbY+/9wvmSnToTej0SYomc2WSRH+L0zVJw==
+concurrently@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/concurrently/-/concurrently-5.3.0.tgz#7500de6410d043c912b2da27de3202cb489b1e7b"
+  integrity sha512-8MhqOB6PWlBfA2vJ8a0bSFKATOdWlHiQlk11IfmQBPaHVP8oP2gsh2MObE6UR3hqDHqvaIvLTyceNW6obVuFHQ==
   dependencies:
     chalk "^2.4.2"
     date-fns "^2.0.1"
@@ -1891,10 +1891,10 @@ fastify-auth@^1.0.1:
     fastify-plugin "^2.0.0"
     reusify "^1.0.4"
 
-fastify-autoload@^3.0.6:
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/fastify-autoload/-/fastify-autoload-3.0.6.tgz#d49305299ff5374ad5ca56ab1870f8c2c8dfe61d"
-  integrity sha512-whwCgkOOJvpNeiHQ2PARr1Z8q45v5l4anbxX2mguaIuxyZLeQotj+k5jjR0nPsS5HzDfAQHrn2bPdA+4W85iVA==
+fastify-autoload@^3.0.7:
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/fastify-autoload/-/fastify-autoload-3.0.7.tgz#921ecaf34cea59ba294bcd77dbfdf7e23c3ad64a"
+  integrity sha512-30eSlnF4Hl6d5WQSRY3O3ey3gpbvHczfDd4mwy8M88NzQsYsfnWKwnC/o1v6eJPWJOuc0/yoOUhUzQlQEIp1Cg==
   dependencies:
     pkg-up "^3.1.0"
     semver "^7.3.2"
@@ -1934,6 +1934,11 @@ fastify-error@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/fastify-error/-/fastify-error-0.1.0.tgz#7ca9d3708a2b1a74aefed0e5dde1b96d0390f718"
   integrity sha512-jyCEc3VPEc8/PUwzDQAM2JlXLK2BG6L19mMJzbGij0TfdY1sHF9pCnnAn6Vcoi84TMTBOJynNDQUMUz6cjRmBw==
+
+fastify-error@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/fastify-error/-/fastify-error-0.2.0.tgz#9a1c28d4f42b6259e7a549671c8e5e2d85660634"
+  integrity sha512-zabxsBatj59ROG0fhP36zNdc5Q1/eYeH9oSF9uvfrurZf8/JKfrJbMcIGrLpLWcf89rS6L91RHWm20A/X85hcA==
 
 fastify-favicon@^3.0.0:
   version "3.0.0"
@@ -1983,10 +1988,10 @@ fastify-plugin@^2.0.1, fastify-plugin@^2.0.3:
   dependencies:
     semver "^7.3.2"
 
-fastify-plugin@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-2.1.0.tgz#fda306356104e0549959e2a932136e28e76091a6"
-  integrity sha512-5quClufwUb304h4ZiwN7tJWvkucUEuFxkK+BLPDKH8fP5lIB0Hf9tzHd56wy1Xu3FMAOP8rhqiOlSslRAJtb7Q==
+fastify-plugin@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-2.2.0.tgz#7b4f526dc08e13635f3e7cb0c79a8a596a90986c"
+  integrity sha512-R2XUkpsuXvz7mctqyY7Y9+CGeYd+ITNUXuGdpOVsIuqHkzARMHm4ZwFGl8xrGJgRAMwMmlWQbX8nduSlexKkjA==
   dependencies:
     semver "^7.3.2"
 
@@ -2013,6 +2018,11 @@ fastify-sensible@^3.0.1:
     type-is "^1.6.18"
     vary "^1.1.2"
 
+fastify-warning@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/fastify-warning/-/fastify-warning-0.2.0.tgz#e717776026a4493dc9a2befa44db6d17f618008f"
+  integrity sha512-s1EQguBw/9qtc1p/WTY4eq9WMRIACkj+HTcOIK1in4MV5aFaQC9ZCIt0dJ7pr5bIf4lPpHvAtP2ywpTNgs7hqw==
+
 fastify@^3.0.0:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/fastify/-/fastify-3.0.3.tgz#5a422a1532c7904a1d55df4ee2938143def5ab43"
@@ -2033,16 +2043,17 @@ fastify@^3.0.0:
     secure-json-parse "^2.0.0"
     tiny-lru "^7.0.0"
 
-fastify@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/fastify/-/fastify-3.1.1.tgz#0a830f4a929abd7f2b05c08620a609a104300a36"
-  integrity sha512-A7kBZIFAdpE/8MZ9qHpQV9IVPpfX63uWMaPN4p0fetax10C2p56iV/VEB5hOgtlXzayGn+4tf+tNHcZsfrjlnA==
+fastify@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/fastify/-/fastify-3.2.0.tgz#acc009f86c06329a53515e303fc35f50d8f59527"
+  integrity sha512-+4gv8GiiblMtJf1z/sCQfEbndugmlpQu8wx4IgEpAstKY36fHIMBCSny9Wz6fHfq+FU/FTpYbrCFxzCMwiykFQ==
   dependencies:
     abstract-logging "^2.0.0"
     ajv "^6.12.2"
     avvio "^7.1.2"
     fast-json-stringify "^2.2.1"
-    fastify-error "^0.1.0"
+    fastify-error "^0.2.0"
+    fastify-warning "^0.2.0"
     find-my-way "^3.0.0"
     flatstr "^1.0.12"
     light-my-request "^4.0.0"
@@ -3688,7 +3699,7 @@ node-fetch@^2.2.0:
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
   integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
 
-node-fetch@^3.0.0-beta.7:
+node-fetch@next:
   version "3.0.0-beta.7"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-3.0.0-beta.7.tgz#28e122943aa8a3e4e7447d525fc138c207faa834"
   integrity sha512-UTmmxR2RCLiGL0q61p8DgMgw1UXd10+XVB77IHG55flJ/tHqQQXloNTm5dd/mB3RNXP3+CJPf++t0nb3whKNkw==
