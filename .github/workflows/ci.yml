@@ -23,9 +23,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2-beta
+    - uses: volta-cli/action@v1
       with:
-        node-version: '12'
+        node-version: 12
 
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
