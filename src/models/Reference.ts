@@ -5,12 +5,11 @@ import {
   Modifiers,
   QueryContext,
   ModelOptions,
-  OrderByDirection,
-  ColumnRef,
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 
 import { BaseModel, Document, User } from '.';
+import { pluck, toTsQuery, orderBy } from '../utils';
 import { Item } from '../lib/zotero';
 
 export class Reference extends BaseModel {
@@ -34,12 +33,13 @@ export class Reference extends BaseModel {
         return builder;
       },
       order(builder, order) {
-        const [column, direction] = orderBy(order);
+        const { ref } = Reference;
+        const [column, direction] = orderBy(ref, order);
         return builder.orderBy(column, direction);
       },
       search(builder, term?: string) {
         if (term) {
-          builder.whereRaw('search_tokens @@ plainto_tsquery(?)', [term]);
+          builder.whereRaw(`search_tokens @@ to_tsquery(?)`, [toTsQuery(term)]);
         }
         return builder;
       },
@@ -110,6 +110,14 @@ export class Reference extends BaseModel {
 
     if (fields && fields.includes('data')) {
       attributes['data'] = this.data;
+    } else {
+      attributes['data'] = pluck(
+        (this.data as unknown) as Record<string, unknown>,
+        'type',
+        'title',
+        'author',
+        'issued'
+      );
     }
 
     return {
@@ -117,21 +125,5 @@ export class Reference extends BaseModel {
       type: 'references',
       attributes,
     };
-  }
-}
-
-function orderBy(
-  order?: 'created-at' | '-created-at' | 'updated-at' | '-updated-at'
-): [ColumnRef, OrderByDirection] {
-  switch (order) {
-    case 'updated-at':
-      return [Reference.ref('updated_at'), 'ASC'];
-    case '-updated-at':
-      return [Reference.ref('updated_at'), 'DESC'];
-    case 'created-at':
-      return [Reference.ref('created_at'), 'ASC'];
-    case '-created-at':
-    default:
-      return [Reference.ref('created_at'), 'DESC'];
   }
 }

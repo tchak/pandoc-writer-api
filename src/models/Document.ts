@@ -5,8 +5,6 @@ import {
   Modifiers,
   ModelOptions,
   QueryContext,
-  OrderByDirection,
-  ColumnRef,
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
@@ -16,6 +14,7 @@ import { safeDump } from 'js-yaml';
 
 import reslate, { BlockType } from '../lib/mdast-slate';
 import { BaseModel, Reference, DocumentVersion, User } from '.';
+import { orderBy } from '../utils';
 
 export class Document extends BaseModel {
   static get tableName(): string {
@@ -38,7 +37,8 @@ export class Document extends BaseModel {
         return builder;
       },
       order(builder, order) {
-        const [column, direction] = orderBy(order);
+        const { ref } = Document;
+        const [column, direction] = orderBy(ref, order);
         return builder.orderBy(column, direction);
       },
     };
@@ -141,18 +141,18 @@ export class Document extends BaseModel {
     const {
       versions: [lastVersion],
     } = this;
-    const { updatedAt, sha } = lastVersion;
+    const { createdAt, sha } = lastVersion;
 
     if (sha !== etag) {
       throw new Error('PreconditionFailed');
     }
 
     const diffInHours = DateTime.utc().diff(
-      DateTime.fromJSDate(updatedAt),
+      DateTime.fromJSDate(createdAt),
       'hours'
     );
 
-    if (diffInHours.hours > 48) {
+    if (diffInHours.hours > 24) {
       return this.$relatedQuery<DocumentVersion>('versions').insert({
         data,
       });
@@ -210,21 +210,5 @@ export class Document extends BaseModel {
         },
       ],
     });
-  }
-}
-
-function orderBy(
-  order?: 'created-at' | '-created-at' | 'updated-at' | '-updated-at'
-): [ColumnRef, OrderByDirection] {
-  switch (order) {
-    case 'updated-at':
-      return [Document.ref('updated_at'), 'ASC'];
-    case '-updated-at':
-      return [Document.ref('updated_at'), 'DESC'];
-    case 'created-at':
-      return [Document.ref('created_at'), 'ASC'];
-    case '-created-at':
-    default:
-      return [Document.ref('created_at'), 'DESC'];
   }
 }
