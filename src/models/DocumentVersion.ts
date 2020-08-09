@@ -12,6 +12,7 @@ import remark from 'remark';
 import lint from 'remark-preset-lint-recommended';
 import report from 'vfile-reporter';
 import strip from 'strip-markdown';
+import { safeDump } from 'js-yaml';
 
 import { BlockType, serialize } from '../lib/mdast-slate';
 import { BaseModel, Document } from '.';
@@ -85,8 +86,19 @@ export class DocumentVersion extends BaseModel {
     };
   }
 
+  get frontmatter(): string {
+    const frontmatter = safeDump({
+      'suppress-bibliography': true,
+    });
+    return `---\n${frontmatter}\n...\n`;
+  }
+
+  get markdownWithFrontmatter(): string {
+    return `${this.frontmatter}${this.markdown}`;
+  }
+
   get markdown(): string {
-    return this.data.map((b) => serialize(b)).join('');
+    return this.data.map((b) => serialize(b)).join('\n');
   }
 
   get text(): string {

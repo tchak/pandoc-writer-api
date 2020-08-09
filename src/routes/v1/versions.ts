@@ -1,6 +1,7 @@
 import { FastifyInstance, RequestGenericInterface } from 'fastify';
 
-import { User, Document, DocumentVersion, UserToken } from '../../models';
+import { User, DocumentVersion, UserToken } from '../../models';
+import { renderDocument, accepts } from '../../utils';
 
 interface GetVersionRequest extends RequestGenericInterface {
   Params: {
@@ -54,22 +55,45 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     return { data: version.$toJsonApi() };
   });
 
-  fastify.get<GetVersionRequest>('/versions/:id', async function (request) {
+  fastify.get<GetVersionRequest>('/versions/:id', async function (
+    request,
+    reply
+  ) {
     const {
-      params: { id },
+      params: { id: idWithFormat },
       query: { fields },
     } = request;
+    const [id, format] = idWithFormat.split('.');
+
     const user = await User.findByToken(request.user as UserToken);
-    const query = DocumentVersion.query()
+    const version = await DocumentVersion.query()
       .modify('kept')
       .joinRelated('document')
       .where('document.user_id', user.id)
       .whereNull('document.deleted_at')
       .findById(id);
 
-    const version = await query;
-
-    return { data: version.$toJsonApi(fields) };
+    switch (accepts(request, format)) {
+      case 'json':
+        reply.header('etag', version.sha);
+        reply.type('application/vnd.api+json');
+        return { data: version.$toJsonApi(fields) };
+      case 'text':
+      case 'text/plain':
+        return renderDocument(version, 'text', reply);
+      case 'markdown':
+      case 'md':
+        return renderDocument(version, 'md', reply);
+      case 'html':
+        return renderDocument(version, 'html', reply);
+      case 'pdf':
+        return renderDocument(version, 'pdf', reply);
+      case 'docx':
+        return renderDocument(version, 'docx', reply);
+      default:
+        reply.notAcceptable();
+        break;
+    }
   });
 
   fastify.delete<DestroyVersionRequest>('/versions/:id', async function (

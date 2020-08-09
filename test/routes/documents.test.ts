@@ -106,14 +106,24 @@ test('get formatted document', async (t) => {
       children: [
         { text: 'Lorem ' },
         { text: 'ipsum', bold: true },
-        { text: ' delor' },
+        { text: ' dolor sit amet' },
+      ],
+    },
+    {
+      type: 'paragraph',
+      children: [
+        {
+          text: 'Consectetur adipiscing elit, sed do eiusmod.',
+        },
       ],
     },
   ];
   const html =
-    '<h1 id="hello">Hello</h1>\n<p>Lorem <strong>ipsum</strong> delor</p>\n';
-  const markdown = '# Hello\n\nLorem **ipsum** delor\n';
-  const text = 'Hello\n\nLorem ipsum delor\n';
+    '<h1 id="hello">Hello</h1>\n<p>Lorem <strong>ipsum</strong> dolor sit amet</p>\n<p>Consectetur adipiscing elit, sed do eiusmod.</p>\n';
+  const markdown =
+    '# Hello\n\nLorem **ipsum** dolor sit amet\n\nConsectetur adipiscing elit, sed do eiusmod.\n';
+  const text =
+    'Hello\n\nLorem ipsum dolor sit amet\n\nConsectetur adipiscing elit, sed do eiusmod.\n';
 
   let res = await request(
     app,

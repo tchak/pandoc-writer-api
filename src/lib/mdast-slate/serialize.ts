@@ -140,26 +140,29 @@ export default function serialize(
 
   switch (type) {
     case nodeTypes.heading[1]:
-      return `# ${children}\n\n`;
+      return `# ${children}\n`;
     case nodeTypes.heading[2]:
-      return `## ${children}\n\n`;
+      return `## ${children}\n`;
     case nodeTypes.heading[3]:
-      return `### ${children}\n\n`;
+      return `### ${children}\n`;
     case nodeTypes.heading[4]:
-      return `#### ${children}\n\n`;
+      return `#### ${children}\n`;
     case nodeTypes.heading[5]:
-      return `##### ${children}\n\n`;
+      return `##### ${children}\n`;
     case nodeTypes.heading[6]:
-      return `###### ${children}\n\n`;
+      return `###### ${children}\n`;
+
+    case nodeTypes.paragraph:
+      return `${children}\n`;
+
+    case nodeTypes.code:
+      return `${CODE}\n${children}\n${CODE}\n`;
 
     case nodeTypes.blockquote:
       // For some reason, marked is parsing blockquotes w/ one new line
       // as contiued blockquotes, so adding two new lines ensures that doesn't
       // happen
-      return `> ${children}\n\n`;
-
-    case nodeTypes.link:
-      return `[${children}](${(chunk as BlockType).url || ''})`;
+      return `> ${children}\n`;
 
     case nodeTypes.bulletedList:
     case nodeTypes.numberedList:
@@ -179,11 +182,8 @@ export default function serialize(
       }
       return `${spacer}${isOL ? '1.' : '-'} ${children}`;
 
-    case nodeTypes.paragraph:
-      return `${children}\n`;
-
-    case nodeTypes.code:
-      return `${CODE}\n${children}\n${CODE}\n`;
+    case nodeTypes.link:
+      return `[${children}](${(chunk as BlockType).url || ''})`;
 
     default:
       return escapeHtml(children);

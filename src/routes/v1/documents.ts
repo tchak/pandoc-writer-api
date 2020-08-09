@@ -1,9 +1,4 @@
-import {
-  FastifyInstance,
-  RequestGenericInterface,
-  FastifyReply,
-  FastifyRequest,
-} from 'fastify';
+import { FastifyInstance, RequestGenericInterface } from 'fastify';
 import remark from 'remark';
 import footnotes from 'remark-footnotes';
 
@@ -14,8 +9,8 @@ import {
   DocumentVersion,
   UserToken,
 } from '../../models';
-import { pandoc } from '../../lib/pandoc';
 import plugin, { BlockType } from '../../lib/mdast-slate';
+import { mapKeys, renderDocument, accepts } from '../../utils';
 
 interface CreateDocumentBody {
   data: {
@@ -361,75 +356,5 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         data: references.map((reference) => reference.$toJsonApi(fields)),
       };
     }
-  );
-}
-
-const ACCEPTS = [
-  'json',
-  'html',
-  'markdown',
-  'pdf',
-  'docx',
-  'application/vnd.api+json',
-  'text/plain',
-];
-
-function accepts(
-  request: FastifyRequest<GetDocumentRequest>,
-  format?: string
-): string {
-  format = format || request.accepts().type(ACCEPTS);
-  if (format === 'application/vnd.api+json') {
-    return 'json';
-  } else if (format === 'txt') {
-    return 'text';
-  }
-  return format;
-}
-
-async function renderDocument(
-  document: Document,
-  format: string,
-  reply: FastifyReply
-): Promise<string> {
-  switch (format) {
-    case 'md':
-      reply.type('text/markdown');
-      return document.markdown;
-    case 'text':
-      reply.type('text/plain');
-      return document.text;
-    case 'html':
-      reply.type('text/html');
-      return pandoc(document.markdownWithFrontmatter, {
-        from: 'markdown+smart+emoji',
-        filter: 'pandoc-citeproc',
-        to: 'html',
-      });
-    case 'docx':
-      reply.type(
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      );
-      return pandoc(document.markdownWithFrontmatter, {
-        from: 'markdown+smart+emoji',
-        filter: 'pandoc-citeproc',
-        to: 'docx',
-      });
-    case 'pdf':
-      reply.type('application/pdf');
-      return pandoc(document.markdownWithFrontmatter, {
-        from: 'markdown+smart',
-        filter: 'pandoc-citeproc',
-        to: 'pdf',
-      });
-  }
-}
-
-function mapKeys<T>(
-  obj: Record<string, T>,
-  callback: (key: string) => string
-): Record<string, T> {
-  return Object.fromEntries(
-    Object.entries(obj).map(([key, value]) => [callback(key), value])
   );
 }
