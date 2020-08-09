@@ -37,8 +37,24 @@ export default function serialize(
   const LIST_TYPES = [nodeTypes.bulletedList, nodeTypes.numberedList];
 
   const text = (chunk as LeafType).text || '';
+  const citationItems = (chunk as BlockType).citationItems;
   let type = (chunk as BlockType).type || '';
   let children = text;
+
+  if (type === nodeTypes.citation) {
+    const items: string[] = [];
+
+    for (const item of citationItems) {
+      if (item.authorOnly) {
+        return `@${item.id}`;
+      }
+      const prefix = item.prefix ? `${item.prefix} ` : '';
+      const id = `${item.suppressAuthor ? '-' : ''}@${item.id}`;
+      items.push(`${prefix}${id}`);
+    }
+
+    return `[${items.join(';')}]`;
+  }
 
   if (!isLeafNode(chunk)) {
     children = chunk.children

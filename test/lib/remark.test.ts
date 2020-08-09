@@ -2,7 +2,7 @@ import { test } from 'tap';
 import remark from 'remark';
 import footnotes from 'remark-footnotes';
 
-import plugin from '../../src/lib/mdast-slate';
+import plugin, { serialize } from '../../src/lib/mdast-slate';
 
 const mdWithFootnotes = `
 Here is a footnote reference,[^1]
@@ -131,6 +131,50 @@ const slateAST = [
   },
 ];
 
+const slateASTWithCitations = [
+  {
+    type: 'paragraph',
+    children: [
+      {
+        text: 'A paragraph with citation ',
+      },
+      {
+        type: 'citation',
+        citationItems: [
+          {
+            id: 'tchak',
+          },
+        ],
+        children: [
+          {
+            text: '',
+          },
+        ],
+      },
+      {
+        text: ' and an inline citation ',
+      },
+      {
+        type: 'citation',
+        citationItems: [
+          {
+            id: 'tchak',
+            authorOnly: true,
+          },
+        ],
+        children: [
+          {
+            text: '',
+          },
+        ],
+      },
+      {
+        text: '.',
+      },
+    ],
+  },
+];
+
 const slateASTWithHeadings = [
   {
     type: 'heading-one',
@@ -193,4 +237,13 @@ test('markdown with footnotes', (t) => {
       t.deepEqual(file.data, slateAST, 'should produce slate AST');
       t.done();
     });
+});
+
+test('markdown with citations', async (t) => {
+  const md = slateASTWithCitations.map((block) => serialize(block)).join('/n');
+
+  t.equal(
+    md,
+    'A paragraph with citation [@tchak] and an inline citation @tchak.\n'
+  );
 });

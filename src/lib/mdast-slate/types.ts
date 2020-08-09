@@ -48,6 +48,17 @@ export interface BlockType {
   url?: string;
   break?: boolean;
   parentType?: string;
+  citationItems?: Array<CitationItemType>;
+}
+
+export interface CitationItemType {
+  id: string;
+  prefix?: string;
+  suffix?: string;
+  locator?: string;
+  label?: string;
+  suppressAuthor?: boolean;
+  authorOnly?: boolean;
 }
 
 export const defaultNodeTypes = {
@@ -55,6 +66,7 @@ export const defaultNodeTypes = {
   blockquote: 'blockquote',
   code: 'code',
   footnote: 'footnote',
+  citation: 'citation',
   link: 'link',
   bulletedList: 'bulleted-list',
   numberedList: 'numbered-list',
