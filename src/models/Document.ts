@@ -116,9 +116,14 @@ export class Document extends BaseModel {
   get frontmatter(): string {
     const frontmatter = safeDump({
       title: this.title,
-      references: [],
+      references: (this.references || []).map(({ id, data }) => ({
+        ...data,
+        id,
+      })),
       nocite: [],
-      'suppress-bibliography': true,
+      'reference-section-title': 'Works Cited',
+      'link-citations': false,
+      'suppress-bibliography': false,
     });
     return `---\n${frontmatter}\n...\n`;
   }

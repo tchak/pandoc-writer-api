@@ -246,6 +246,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       id,
       true
     );
+    await document.$loadRelated('references');
 
     switch (accepts(request, format)) {
       case 'json':

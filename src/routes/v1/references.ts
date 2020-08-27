@@ -7,7 +7,9 @@ interface CreateReferenceRequest extends RequestGenericInterface {
   Body: {
     data: {
       attributes: {
-        data: Item;
+        data?: Item;
+        url?: string;
+        identifier?: string;
       };
       relationships?: {
         documents: {
@@ -21,13 +23,6 @@ interface CreateReferenceRequest extends RequestGenericInterface {
 interface DestroyReferenceRequest extends RequestGenericInterface {
   Params: {
     id: string;
-  };
-}
-
-interface CrawlReferenceRequest extends RequestGenericInterface {
-  Body: {
-    url: string;
-    identifier: string;
   };
 }
 
@@ -59,43 +54,33 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     reply
   ) {
     const {
-      attributes: { data },
+      attributes: { data, url, identifier },
       relationships,
     } = request.body.data;
     const user = await User.findByToken(request.user as UserToken);
-    const reference = await user.$relatedQuery<Reference>('references').insert({
-      data,
-    });
-
-    if (relationships) {
-      const ids = relationships.documents.data.map(({ id }) => id);
-      await reference.$relatedQuery<Document>('documents').relate(ids);
-    }
-
-    reply.status(201);
-    return { data: reference.$toJsonApi() };
-  });
-
-  fastify.post<CrawlReferenceRequest>('/references/crawl', async function (
-    request,
-    reply
-  ) {
-    const user = await User.findByToken(request.user as UserToken);
-    const { url, identifier } = request.body;
-    let items: Item[];
+    let items: Item[] = [];
 
     if (url) {
       items = await searchByURL(url);
     } else if (identifier) {
       items = await searchByIdentifier(identifier);
+    } else {
+      items = [data];
     }
 
     const references = await user
       .$relatedQuery<Reference>('references')
       .insert(items.map((data) => ({ data })));
 
+    if (relationships) {
+      const ids = relationships.documents.data.map(({ id }) => id);
+      for (const reference of references) {
+        await reference.$relatedQuery<Document>('documents').relate(ids);
+      }
+    }
+
     reply.status(201);
-    return { ids: references.map(({ id }) => id) };
+    return { data: references[0].$toJsonApi() };
   });
 
   fastify.get<GetReferencesRequest>('/references', async function (request) {

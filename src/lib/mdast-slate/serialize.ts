@@ -50,7 +50,8 @@ export default function serialize(
       }
       const prefix = item.prefix ? `${item.prefix} ` : '';
       const id = `${item.suppressAuthor ? '-' : ''}@${item.id}`;
-      items.push(`${prefix}${id}`);
+      const locator = item.locator ? ` ${item.locator}` : '';
+      items.push(`${prefix}${id}${locator}`);
     }
 
     return `[${items.join(';')}]`;
