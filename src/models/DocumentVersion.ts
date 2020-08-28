@@ -59,19 +59,21 @@ export class DocumentVersion extends BaseModel {
   };
 
   static get modifiers(): Modifiers {
+    const { ref } = DocumentVersion;
+
     return {
       ...super.modifiers,
       last(builder) {
-        const { ref } = DocumentVersion;
         builder.orderBy(ref('created_at'), 'DESC').limit(1);
       },
       deleted(builder) {
-        const { ref } = DocumentVersion;
         builder.whereNotNull(ref('deleted_at'));
       },
       kept(builder, throwIfNotFound = true) {
-        const { ref } = DocumentVersion;
-        builder = builder.whereNull(ref('deleted_at'));
+        builder = builder
+          .whereNull(ref('deleted_at'))
+          .joinRelated('document')
+          .whereNull('document.deleted_at');
 
         if (throwIfNotFound) {
           return builder.throwIfNotFound();
@@ -79,7 +81,6 @@ export class DocumentVersion extends BaseModel {
         return builder;
       },
       order(builder, order) {
-        const { ref } = DocumentVersion;
         const [column, direction] = orderBy(ref, order);
         return builder.orderBy(column, direction);
       },

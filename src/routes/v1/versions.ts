@@ -68,9 +68,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const user = await User.findByToken(request.user as UserToken);
     const version = await DocumentVersion.query()
       .modify('kept')
-      .joinRelated('document')
       .where('document.user_id', user.id)
-      .whereNull('document.deleted_at')
       .findById(id);
 
     switch (accepts(request, format)) {
@@ -106,12 +104,10 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     const user = await User.findByToken(request.user as UserToken);
     const query = DocumentVersion.query()
       .modify('kept')
-      .joinRelated('document')
       .where('document.user_id', user.id)
-      .whereNull('document.deleted_at')
       .findById(id);
 
-    await (await query).$destroy();
+    await query.del();
 
     reply.status(204);
   });

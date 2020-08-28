@@ -115,12 +115,12 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     reply
   ) {
     const user = await User.findByToken(request.user as UserToken);
-    const reference = await user
+    const query = user
       .$relatedQuery<Reference>('references')
       .modify('kept')
       .findById(request.params.id);
 
-    await reference.$destroy();
+    await query.del();
 
     reply.status(204);
   });

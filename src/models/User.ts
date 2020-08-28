@@ -13,13 +13,13 @@ export class User extends BaseModel {
   }
 
   static get modifiers(): Modifiers {
+    const { ref } = User;
+
     return {
       deleted(builder) {
-        const { ref } = User;
         builder.whereNotNull(ref('deleted_at'));
       },
       kept(builder, throwIfNotFound = true) {
-        const { ref } = User;
         builder = builder.whereNull(ref('deleted_at'));
 
         if (throwIfNotFound) {

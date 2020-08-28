@@ -22,13 +22,13 @@ export class Document extends BaseModel {
   }
 
   static get modifiers(): Modifiers {
+    const { ref } = Document;
+
     return {
       deleted(builder) {
-        const { ref } = Document;
         builder.whereNotNull(ref('deleted_at'));
       },
       kept(builder, throwIfNotFound = true) {
-        const { ref } = Document;
         builder = builder.whereNull(ref('deleted_at'));
 
         if (throwIfNotFound) {
@@ -37,7 +37,6 @@ export class Document extends BaseModel {
         return builder;
       },
       order(builder, order) {
-        const { ref } = Document;
         const [column, direction] = orderBy(ref, order);
         return builder.orderBy(column, direction);
       },

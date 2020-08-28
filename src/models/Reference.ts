@@ -18,13 +18,13 @@ export class Reference extends BaseModel {
   }
 
   static get modifiers(): Modifiers {
+    const { ref } = Reference;
+
     return {
       deleted(builder) {
-        const { ref } = Reference;
         builder.whereNotNull(ref('deleted_at'));
       },
       kept(builder, throwIfNotFound = true) {
-        const { ref } = Reference;
         builder = builder.whereNull(ref('deleted_at'));
 
         if (throwIfNotFound) {
@@ -33,7 +33,6 @@ export class Reference extends BaseModel {
         return builder;
       },
       order(builder, order) {
-        const { ref } = Reference;
         const [column, direction] = orderBy(ref, order);
         return builder.orderBy(column, direction);
       },

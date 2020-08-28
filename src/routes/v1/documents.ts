@@ -246,7 +246,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       id,
       true
     );
-    await document.$loadRelated('references');
+    await document.$fetchGraph('references');
 
     switch (accepts(request, format)) {
       case 'json':
@@ -279,10 +279,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         body: { data },
       } = request;
       const user = await User.findByToken(request.user as UserToken);
-      const document = await user
-        .$relatedQuery<Document>('documents')
-        .modify('kept')
-        .findById(id);
+      const document = await User.findDocument(request.user as UserToken, id);
 
       const ids = data.map(({ id }) => id);
       const references = await user
