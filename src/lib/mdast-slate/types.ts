@@ -49,6 +49,7 @@ export interface BlockType {
   break?: boolean;
   parentType?: string;
   citationItems?: Array<CitationItemType>;
+  content?: Array<BlockType | LeafType>;
 }
 
 export interface CitationItemType {

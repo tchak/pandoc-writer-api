@@ -37,7 +37,8 @@ const slateAST = [
       },
       {
         type: 'footnote',
-        children: [
+        children: [{ text: '' }],
+        content: [
           {
             type: 'paragraph',
             children: [
@@ -53,7 +54,8 @@ const slateAST = [
       },
       {
         type: 'footnote',
-        children: [
+        children: [{ text: '' }],
+        content: [
           {
             type: 'paragraph',
             children: [
@@ -90,7 +92,8 @@ const slateAST = [
       },
       {
         type: 'footnote',
-        children: [
+        children: [{ text: '' }],
+        content: [
           {
             type: 'paragraph',
             children: [

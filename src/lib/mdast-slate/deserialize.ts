@@ -18,7 +18,7 @@ export interface DeserializeContext {
 export function assignFootnoteDefinitions(context: DeserializeContext): void {
   for (const identifier in context.footnoteReferences) {
     if (context.footnoteDefinitions[identifier]) {
-      context.footnoteReferences[identifier].children =
+      context.footnoteReferences[identifier].content =
         context.footnoteDefinitions[identifier];
     }
   }
@@ -78,12 +78,14 @@ export default function deserialize(
     case 'footnote':
       return {
         type: nodeTypes.footnote,
-        children: [{ type: 'paragraph', children }],
+        children: [{ text: '' }],
+        content: [{ type: 'paragraph', children }],
       };
     case 'footnoteReference':
       const footnoteReference = {
         type: nodeTypes.footnote,
-        children: [{ type: 'paragraph', children: [{ text: '' }] }],
+        children: [{ text: '' }],
+        content: [{ type: 'paragraph', children: [{ text: '' }] }],
       };
       context.footnoteReferences[node.identifier] = footnoteReference;
       return footnoteReference;

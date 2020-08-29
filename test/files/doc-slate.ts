@@ -9,7 +9,8 @@ export default [
       },
       {
         type: 'footnote',
-        children: [
+        children: [{ text: '' }],
+        content: [
           {
             type: 'paragraph',
             children: [{ text: 'My first ' }, { bold: true, text: 'footnote' }],
@@ -44,7 +45,8 @@ export default [
       },
       {
         type: 'footnote',
-        children: [
+        children: [{ text: '' }],
+        content: [
           { type: 'paragraph', children: [{ text: 'Another footnote' }] },
         ],
       },
