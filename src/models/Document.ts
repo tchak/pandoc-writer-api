@@ -11,10 +11,22 @@ import { DateTime } from 'luxon';
 import remark from 'remark';
 import footnotes from 'remark-footnotes';
 import { safeDump } from 'js-yaml';
+import path from 'path';
+import fs from 'fs';
 
 import reslate, { BlockType } from '../lib/mdast-slate';
 import { BaseModel, Reference, DocumentVersion, User } from '.';
 import { orderBy } from '../utils';
+
+interface JSONAPIPayload {
+  attributes?: Record<string, unknown>;
+}
+
+const PROD_CSL_FOLDER = path.join(__dirname, '..', '..', '..', 'csl');
+const TEST_CSL_FOLDER = path.join(__dirname, '..', '..', 'csl');
+const CSL_FOLDER = fs.existsSync(PROD_CSL_FOLDER)
+  ? PROD_CSL_FOLDER
+  : TEST_CSL_FOLDER;
 
 export class Document extends BaseModel {
   static get tableName(): string {
@@ -115,11 +127,14 @@ export class Document extends BaseModel {
   get frontmatter(): string {
     const frontmatter = safeDump({
       title: this.title,
+      author: this.author ? [{ name: this.author }] : [],
       references: (this.references || []).map(({ id, data }) => ({
         ...data,
         id,
       })),
       nocite: [],
+      lang: this.lang,
+      'citation-style': this.citationStylePath,
       'reference-section-title': 'Works Cited',
       'link-citations': false,
       'suppress-bibliography': false,
@@ -129,6 +144,25 @@ export class Document extends BaseModel {
 
   get markdownWithFrontmatter(): string {
     return `${this.frontmatter}${this.markdown}`;
+  }
+
+  get citationStyle(): string {
+    return (this.meta && this.meta.citationStyle) || 'chicago-author-date';
+  }
+
+  get author(): string {
+    return this.meta && this.meta.author;
+  }
+
+  private get citationStylePath(): string {
+    return path.join(CSL_FOLDER, `${this.citationStyle}.csl`);
+  }
+
+  private get lang() {
+    if (this.language === 'en') {
+      return 'en-US';
+    }
+    return this.language;
   }
 
   title: string;
@@ -177,10 +211,13 @@ export class Document extends BaseModel {
   }
 
   $toJsonApi(fields?: string[]): OrbitRecord {
-    const { id, title, createdAt, updatedAt } = this;
+    const { id, title, language, createdAt, updatedAt } = this;
 
     const attributes = {
       title,
+      language,
+      author: this.author,
+      'citation-style': this.citationStyle,
       'created-at': createdAt,
       'updated-at': updatedAt,
     };
@@ -197,6 +234,29 @@ export class Document extends BaseModel {
       type: 'documents',
       attributes,
     };
+  }
+
+  static $fromJsonApi(data: JSONAPIPayload): Partial<Document> {
+    const attributes: Partial<Document> = {};
+    const attributeNames = ['title', 'language', 'data'];
+    const metaAttributeNames = ['author', 'citation-style'];
+    if (data && data.attributes) {
+      for (const attribute of attributeNames) {
+        if (data.attributes[attribute] !== undefined) {
+          attributes[attribute] = data.attributes[attribute];
+        }
+      }
+      for (const attribute of metaAttributeNames) {
+        if (data.attributes[attribute] !== undefined) {
+          attributes[
+            attribute === 'citation-style'
+              ? 'meta:citationStyle'
+              : `meta:${attribute}`
+          ] = data.attributes[attribute] as string;
+        }
+      }
+    }
+    return attributes;
   }
 
   static async import(markdown: string, title?: string): Promise<Document> {

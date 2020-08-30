@@ -10,7 +10,7 @@ import {
   UserToken,
 } from '../../models';
 import plugin, { BlockType } from '../../lib/mdast-slate';
-import { mapKeys, renderDocument, accepts } from '../../utils';
+import { renderDocument, accepts } from '../../utils';
 
 interface CreateDocumentBody {
   data: {
@@ -41,7 +41,9 @@ interface UpdateDocumentRequest extends RequestGenericInterface {
     data: {
       attributes: {
         title?: string;
+        author?: string;
         language?: string;
+        'citation-style'?: string;
         data?: BlockType[];
         meta?: Record<string, string>;
       };
@@ -155,6 +157,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
       .insertGraphAndFetch({
         title,
         language,
+        meta: {},
         versions: [
           {
             data,
@@ -171,7 +174,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     request,
     reply
   ) {
-    const { title, meta, data, language } = request.body.data.attributes;
+    const { data, ...attributes } = Document.$fromJsonApi(request.body.data);
     const etag = request.headers['if-match'];
     const user = await User.findByToken(request.user as UserToken);
 
@@ -182,18 +185,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
         .findById(request.params.id);
       const document = await query.withGraphFetched('versions(last)');
 
-      if (title) {
-        await query.patch({ title });
-      }
-      if (language) {
-        await query.patch({ language });
-      }
-      if (meta) {
-        await query.patch({
-          meta: mapKeys(meta, (key) => `meta:${key}`),
-        });
-      }
-
+      await query.patch(attributes);
       if (data) {
         await document.patchDocumentVersion(data, etag);
       }
