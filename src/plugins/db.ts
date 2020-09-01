@@ -4,15 +4,12 @@ import Knex from 'knex';
 import knexConfig from '../../knexfile';
 import { Model } from 'objection';
 
-const env = process.env['NODE_ENV'] || 'development';
-
-// the use of fastify-plugin is required to be able
-// to export the decorators to the outer scope
-export default fp(async function (fastify: FastifyInstance) {
-  const knex = Knex(knexConfig[env]);
+export default fp(async function (server: FastifyInstance) {
+  const environment = process.env['NODE_ENV'] || 'development';
+  const knex = Knex(knexConfig[environment]);
   Model.knex(knex);
 
-  fastify.addHook('onClose', async (_, done) => {
+  server.addHook('onClose', async (_, done) => {
     await knex.destroy();
     done();
   });
