@@ -7,8 +7,8 @@ interface GetCitationStylesRequest extends RequestGenericInterface {
   };
 }
 
-export default async function (fastify: FastifyInstance): Promise<void> {
-  fastify.get<GetCitationStylesRequest>('/citation-styles', async function () {
+export default async function (server: FastifyInstance): Promise<void> {
+  server.get<GetCitationStylesRequest>('/citation-styles', async function () {
     return {
       data: sortBy(
         [

@@ -43,13 +43,13 @@ interface GetReferenceRequest extends RequestGenericInterface {
   };
 }
 
-export default async function (fastify: FastifyInstance): Promise<void> {
-  fastify.addHook(
+export default async function (server: FastifyInstance): Promise<void> {
+  server.addHook(
     'preHandler',
-    fastify.auth([async (request) => request.jwtVerify()])
+    server.auth([async (request) => request.jwtVerify()])
   );
 
-  fastify.post<CreateReferenceRequest>('/references', async function (
+  server.post<CreateReferenceRequest>('/references', async function (
     request,
     reply
   ) {
@@ -83,7 +83,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     return { data: references[0].$toJsonApi() };
   });
 
-  fastify.get<GetReferencesRequest>('/references', async function (request) {
+  server.get<GetReferencesRequest>('/references', async function (request) {
     const {
       query: { order, q, fields },
     } = request;
@@ -100,7 +100,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     };
   });
 
-  fastify.get<GetReferenceRequest>('/references/:id', async function (request) {
+  server.get<GetReferenceRequest>('/references/:id', async function (request) {
     const user = await User.findByToken(request.user as UserToken);
     const reference = await user
       .$relatedQuery<Reference>('references')
@@ -110,7 +110,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     return { data: reference.$toJsonApi(request.query.fields) };
   });
 
-  fastify.delete<DestroyReferenceRequest>('/references/:id', async function (
+  server.delete<DestroyReferenceRequest>('/references/:id', async function (
     request,
     reply
   ) {

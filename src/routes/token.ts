@@ -14,11 +14,11 @@ interface TokenRequest extends RequestGenericInterface {
   };
 }
 
-export default async function (fastify: FastifyInstance): Promise<void> {
-  fastify.register(async function (fastify) {
-    fastify.register(formBody);
+export default async function (server: FastifyInstance): Promise<void> {
+  server.register(async function (server) {
+    server.register(formBody);
 
-    fastify.post<TokenRequest>('/token', async function (request, reply) {
+    server.post<TokenRequest>('/token', async function (request, reply) {
       const { grant_type, username, password, refresh_token } = request.body;
 
       if (grant_type === 'password') {
@@ -31,13 +31,13 @@ export default async function (fastify: FastifyInstance): Promise<void> {
               userAgent: request.headers['user-agent'],
             })
             .returning('*');
-          return generateAccessToken(fastify, user, refreshToken.token);
+          return generateAccessToken(server, user, refreshToken.token);
         }
       } else if (grant_type === 'refresh_token') {
         const user = await findUserByRefreshToken(refresh_token);
 
         if (user) {
-          return generateAccessToken(fastify, user);
+          return generateAccessToken(server, user);
         }
       }
 
@@ -45,7 +45,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     });
   });
 
-  fastify.delete('/logout', async function (request, reply) {
+  server.delete('/logout', async function (request, reply) {
     const user = await User.findByToken(request.user as UserToken);
     await user.$relatedQuery<RefreshToken>('refreshTokens').del();
 
@@ -95,11 +95,11 @@ async function verifyPassword(hash: string, password: string) {
 }
 
 function generateAccessToken(
-  fastify: FastifyInstance,
+  server: FastifyInstance,
   user: User,
   refresh_token?: string
 ) {
-  const access_token = fastify.jwt.sign(
+  const access_token = server.jwt.sign(
     { email: user.email },
     { subject: user.id }
   );

@@ -111,13 +111,13 @@ interface GetDocumentReferencesRequest extends RequestGenericInterface {
   };
 }
 
-export default async function (fastify: FastifyInstance): Promise<void> {
-  fastify.addHook(
+export default async function (server: FastifyInstance): Promise<void> {
+  server.addHook(
     'preHandler',
-    fastify.auth([async (request) => request.jwtVerify()])
+    server.auth([async (request) => request.jwtVerify()])
   );
 
-  fastify.post<CreateDocumentRequest>('/documents', async function (
+  server.post<CreateDocumentRequest>('/documents', async function (
     request,
     reply
   ) {
@@ -170,7 +170,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     return { data: document.$toJsonApi() };
   });
 
-  fastify.patch<UpdateDocumentRequest>('/documents/:id', async function (
+  server.patch<UpdateDocumentRequest>('/documents/:id', async function (
     request,
     reply
   ) {
@@ -195,7 +195,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     });
   });
 
-  fastify.delete<DestroyDocumentRequest>('/documents/:id', async function (
+  server.delete<DestroyDocumentRequest>('/documents/:id', async function (
     request,
     reply
   ) {
@@ -209,7 +209,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     reply.status(204);
   });
 
-  fastify.get<GetDocumentsRequest>('/documents', async function (request) {
+  server.get<GetDocumentsRequest>('/documents', async function (request) {
     const {
       query: { order },
     } = request;
@@ -223,7 +223,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     return { data: documents.map((document) => document.$toJsonApi()) };
   });
 
-  fastify.get<GetDocumentRequest>('/documents/:id', async function (
+  server.get<GetDocumentRequest>('/documents/:id', async function (
     request,
     reply
   ) {
@@ -263,7 +263,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     }
   });
 
-  fastify.post<AddDocumentReferencesRequest>(
+  server.post<AddDocumentReferencesRequest>(
     '/documents/:id/relationships/references',
     async function (request, reply) {
       const {
@@ -285,7 +285,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     }
   );
 
-  fastify.delete<RemoveDocumentReferencesRequest>(
+  server.delete<RemoveDocumentReferencesRequest>(
     '/documents/:id/relationships/references',
     async function (request, reply) {
       const {
@@ -305,7 +305,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     }
   );
 
-  fastify.get<GetDocumentVersionsRequest>(
+  server.get<GetDocumentVersionsRequest>(
     '/documents/:id/versions',
     async function (request) {
       const {
@@ -326,7 +326,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     }
   );
 
-  fastify.get<GetDocumentReferencesRequest>(
+  server.get<GetDocumentReferencesRequest>(
     '/documents/:id/references',
     async function (request) {
       const {

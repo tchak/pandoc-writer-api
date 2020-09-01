@@ -17,8 +17,8 @@ interface CreateUserRequest extends RequestGenericInterface {
   };
 }
 
-export default async function (fastify: FastifyInstance): Promise<void> {
-  fastify.post<CreateUserRequest>('/user', async function (request, reply) {
+export default async function (server: FastifyInstance): Promise<void> {
+  server.post<CreateUserRequest>('/user', async function (request, reply) {
     const { email, password, code } = request.body.data.attributes;
 
     const errors = validate(
@@ -55,9 +55,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     reply.forbidden();
   });
 
-  fastify.get(
+  server.get(
     '/user',
-    { preHandler: fastify.auth([async (request) => request.jwtVerify()]) },
+    { preHandler: server.auth([async (request) => request.jwtVerify()]) },
     async function (request) {
       const user = await User.findByToken(request.user as UserToken);
 
@@ -65,9 +65,9 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     }
   );
 
-  fastify.delete(
+  server.delete(
     '/user',
-    { preHandler: fastify.auth([async (request) => request.jwtVerify()]) },
+    { preHandler: server.auth([async (request) => request.jwtVerify()]) },
     async function (request, reply) {
       const user = await User.findByToken(request.user as UserToken);
       await user.$destroy();

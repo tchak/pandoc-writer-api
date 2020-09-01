@@ -30,13 +30,13 @@ interface DestroyVersionRequest extends RequestGenericInterface {
   };
 }
 
-export default async function (fastify: FastifyInstance): Promise<void> {
-  fastify.addHook(
+export default async function (server: FastifyInstance): Promise<void> {
+  server.addHook(
     'preHandler',
-    fastify.auth([async (request) => request.jwtVerify()])
+    server.auth([async (request) => request.jwtVerify()])
   );
 
-  fastify.post<CreateVersionRequest>('/versions', async function (
+  server.post<CreateVersionRequest>('/versions', async function (
     request,
     reply
   ) {
@@ -55,7 +55,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     return { data: version.$toJsonApi() };
   });
 
-  fastify.get<GetVersionRequest>('/versions/:id', async function (
+  server.get<GetVersionRequest>('/versions/:id', async function (
     request,
     reply
   ) {
@@ -94,7 +94,7 @@ export default async function (fastify: FastifyInstance): Promise<void> {
     }
   });
 
-  fastify.delete<DestroyVersionRequest>('/versions/:id', async function (
+  server.delete<DestroyVersionRequest>('/versions/:id', async function (
     request,
     reply
   ) {

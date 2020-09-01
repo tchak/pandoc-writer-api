@@ -1,10 +1,10 @@
 import fp from 'fastify-plugin';
-import { FastifyInstance } from 'fastify';
 import Knex from 'knex';
-import knexConfig from '../../knexfile';
 import { Model } from 'objection';
 
-export default fp(async function (server: FastifyInstance) {
+import knexConfig from '../../knexfile';
+
+export default fp(async (server) => {
   const environment = process.env['NODE_ENV'] || 'development';
   const knex = Knex(knexConfig[environment]);
   Model.knex(knex);
