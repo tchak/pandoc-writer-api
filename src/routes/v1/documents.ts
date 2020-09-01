@@ -69,6 +69,7 @@ interface GetDocumentRequest extends RequestGenericInterface {
   };
   Querystring: {
     fields?: string[];
+    include?: 'references';
   };
 }
 
@@ -229,7 +230,7 @@ export default async function (server: FastifyInstance): Promise<void> {
   ) {
     const {
       params: { id: idWithFormat },
-      query: { fields },
+      query: { fields, include },
     } = request;
     const [id, format] = idWithFormat.split('.');
 
@@ -244,7 +245,12 @@ export default async function (server: FastifyInstance): Promise<void> {
       case 'json':
         reply.header('etag', document.sha);
         reply.type('application/vnd.api+json');
-        return { data: document.$toJsonApi(fields) };
+        return {
+          data: document.$toJsonApi(fields),
+          included: include
+            ? document.references.map((reference) => reference.$toJsonApi())
+            : [],
+        };
       case 'text':
       case 'text/plain':
         return renderDocument(document, 'text', reply);
