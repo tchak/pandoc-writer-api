@@ -147,7 +147,7 @@ export class Document extends BaseModel {
   }
 
   get citationStyle(): string {
-    return (this.meta && this.meta.citationStyle) || 'chicago-author-date';
+    return (this.meta && this.meta.citation_style) || 'chicago-author-date';
   }
 
   get author(): string {
