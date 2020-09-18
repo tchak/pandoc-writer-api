@@ -256,17 +256,4 @@ export class Document extends BaseModel {
     }
     return attributes;
   }
-
-  static async import(markdown: string, title?: string): Promise<Document> {
-    const data = parse(markdown);
-
-    return this.query().insertGraphAndFetch({
-      title: title || 'New document',
-      versions: [
-        {
-          data,
-        },
-      ],
-    });
-  }
 }

@@ -7,7 +7,9 @@ import {
   DocumentVersion,
   UserToken,
 } from '../../models';
-import { BlockType, parse } from '../../lib/unist';
+import { CreateDocumentCommand } from '../../commands/create-document';
+import { UpdateDocumentCommand } from '../../commands/update-document';
+import { BlockType } from '../../lib/unist';
 import { renderDocument, accepts } from '../../utils';
 
 interface CreateDocumentBody {
@@ -121,43 +123,30 @@ export default async function (server: FastifyInstance): Promise<void> {
     reply
   ) {
     const user = await User.findByToken(request.user as UserToken);
+    const command = new CreateDocumentCommand(user);
 
-    let title: string;
-    let language: string;
-    let markdown: string;
-    let data: BlockType[] = [];
+    let document: Document;
 
     switch (request.headers['content-type']) {
       case 'text/markdown':
       case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        title = request.query.title || 'Imported Document';
-        language = request.query.language || 'en';
-        markdown = request.body as string;
+        document = await command.run({
+          title: request.query.title,
+          language: request.query.language,
+          markdown: request.body as string,
+        });
         break;
       case 'application/vnd.api+json':
-        const attributes = (request.body as CreateDocumentBody).data.attributes;
-        title = attributes.title;
-        language = attributes.language || 'en';
-        data = attributes.data || [];
+        const { data, title, language } = Document.$fromJsonApi(
+          (request.body as CreateDocumentBody).data
+        );
+        document = await command.run({
+          title,
+          language,
+          data: data || [],
+        });
         break;
     }
-
-    if (markdown) {
-      data = parse(markdown);
-    }
-
-    const document = await user
-      .$relatedQuery<Document>('documents')
-      .insertGraphAndFetch({
-        title,
-        language,
-        meta: {},
-        versions: [
-          {
-            data,
-          },
-        ],
-      });
 
     reply.header('etag', document.sha);
     reply.status(201);
@@ -171,22 +160,16 @@ export default async function (server: FastifyInstance): Promise<void> {
     const { data, ...attributes } = Document.$fromJsonApi(request.body.data);
     const etag = request.headers['if-match'];
     const user = await User.findByToken(request.user as UserToken);
-
-    await Document.transaction(async (trx) => {
-      const query = user
-        .$relatedQuery<Document>('documents', trx)
-        .modify('kept')
-        .findById(request.params.id);
-      const document = await query.withGraphFetched('versions(last)');
-
-      await query.patch(attributes);
-      if (data) {
-        await document.patchDocumentVersion(data, etag);
-      }
-
-      reply.header('etag', document.sha);
-      reply.status(204);
+    const command = new UpdateDocumentCommand(user);
+    const document = await command.run({
+      id: request.params.id,
+      etag,
+      data,
+      attributes,
     });
+
+    reply.header('etag', document.sha);
+    reply.status(204);
   });
 
   server.delete<DestroyDocumentRequest>('/documents/:id', async function (
