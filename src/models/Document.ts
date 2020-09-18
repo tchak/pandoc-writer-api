@@ -8,13 +8,11 @@ import {
 } from 'objection';
 import { Record as OrbitRecord } from '@orbit/data';
 import { DateTime } from 'luxon';
-import remark from 'remark';
-import footnotes from 'remark-footnotes';
 import { safeDump } from 'js-yaml';
 import path from 'path';
 import fs from 'fs';
 
-import reslate, { BlockType } from '../lib/mdast-slate';
+import { BlockType, parse } from '../lib/unist';
 import { BaseModel, Reference, DocumentVersion, User } from '.';
 import { orderBy } from '../utils';
 
@@ -260,11 +258,7 @@ export class Document extends BaseModel {
   }
 
   static async import(markdown: string, title?: string): Promise<Document> {
-    const file = await remark()
-      .use(footnotes, { inlineNotes: true })
-      .use(reslate)
-      .process(markdown);
-    const data = file.data as BlockType[];
+    const data = parse(markdown);
 
     return this.query().insertGraphAndFetch({
       title: title || 'New document',

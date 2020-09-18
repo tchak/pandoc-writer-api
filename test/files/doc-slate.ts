@@ -70,6 +70,4 @@ export default [
       },
     ],
   },
-  { type: 'paragraph', children: [{ text: '' }] },
-  { type: 'paragraph', children: [{ text: '' }] },
 ];

@@ -14,7 +14,7 @@ import report from 'vfile-reporter';
 import strip from 'strip-markdown';
 import { safeDump } from 'js-yaml';
 
-import { BlockType, serialize } from '../lib/mdast-slate';
+import { BlockType, stringify } from '../lib/unist';
 import { BaseModel, Document } from '.';
 import { orderBy } from '../utils';
 
@@ -99,7 +99,7 @@ export class DocumentVersion extends BaseModel {
   }
 
   get markdown(): string {
-    return this.data.map((b) => serialize(b)).join('\n');
+    return stringify(this.data);
   }
 
   get text(): string {

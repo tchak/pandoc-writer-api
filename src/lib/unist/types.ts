@@ -1,31 +1,27 @@
-export interface NodeTypes {
-  paragraph?: string;
-  blockquote?: string;
-  code?: string;
-  footnote?: string;
-  link?: string;
-  bulletedList?: string;
-  numberedList?: string;
-  listItem?: string;
-  heading?: {
-    1?: string;
-    2?: string;
-    3?: string;
-    4?: string;
-    5?: string;
-    6?: string;
-  };
+import { Node } from 'unist';
+
+export interface CitationItemType {
+  id: string;
+  prefix?: string;
+  suffix?: string;
+  locator?: string;
+  label?: string;
+  suppressAuthor?: boolean;
+  authorOnly?: boolean;
 }
 
-export interface MdastNode {
-  type?: string;
+export interface MdastNode extends Node {
+  type: string;
   ordered?: boolean;
   value?: string;
   text?: string;
   children?: Array<MdastNode>;
   depth?: 1 | 2 | 3 | 4 | 5 | 6;
   url?: string;
+  label?: string;
   identifier?: string;
+  citationItems?: Array<CitationItemType>;
+  lang?: string;
   // mdast metadata
   position?: any;
   spread?: any;
@@ -46,20 +42,10 @@ export interface BlockType {
   type: string;
   children: Array<BlockType | LeafType>;
   url?: string;
-  break?: boolean;
   parentType?: string;
   citationItems?: Array<CitationItemType>;
   content?: Array<BlockType | LeafType>;
-}
-
-export interface CitationItemType {
-  id: string;
-  prefix?: string;
-  suffix?: string;
-  locator?: string;
-  label?: string;
-  suppressAuthor?: boolean;
-  authorOnly?: boolean;
+  lang?: string;
 }
 
 export const defaultNodeTypes = {

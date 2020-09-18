@@ -1,8 +1,6 @@
 import { test } from 'tap';
-import remark from 'remark';
-import footnotes from 'remark-footnotes';
 
-import plugin, { serialize } from '../../src/lib/mdast-slate';
+import { parse, stringify } from '../../src/lib/unist';
 
 const mdWithFootnotes = `
 Here is a footnote reference,[^1]
@@ -111,22 +109,6 @@ const slateAST = [
     type: 'paragraph',
     children: [
       {
-        text: '',
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    children: [
-      {
-        text: '',
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    children: [
-      {
         text:
           'This paragraph won’t be part of the note, because it\nisn’t indented.',
       },
@@ -213,40 +195,25 @@ const slateASTWithHeadings = [
   },
 ];
 
-test('markdown with headings', (t) => {
-  remark()
-    .use(footnotes, { inlineNotes: true })
-    .use(plugin)
-    .process(
-      '# Heading 1\n\nparagraph 1\n\n## Heading 2\n\nparagraph 2',
-      function (err, file) {
-        if (err) throw err;
-        t.deepEqual(
-          file.data,
-          slateASTWithHeadings,
-          'should produce slate AST'
-        );
-        t.done();
-      }
-    );
+test('markdown with headings', async (t) => {
+  const nodes = parse(
+    '# Heading 1\n\nparagraph 1\n\n## Heading 2\n\nparagraph 2'
+  );
+
+  t.deepEqual(nodes, slateASTWithHeadings, 'should produce slate AST');
 });
 
-test('markdown with footnotes', (t) => {
-  remark()
-    .use(footnotes, { inlineNotes: true })
-    .use(plugin)
-    .process(mdWithFootnotes, function (err, file) {
-      if (err) throw err;
-      t.deepEqual(file.data, slateAST, 'should produce slate AST');
-      t.done();
-    });
+test('markdown with footnotes', async (t) => {
+  const nodes = parse(mdWithFootnotes);
+
+  t.deepEqual(nodes, slateAST, 'should produce slate AST');
 });
 
 test('markdown with citations', async (t) => {
-  const md = slateASTWithCitations.map((block) => serialize(block)).join('/n');
+  const markdown = stringify(slateASTWithCitations);
 
   t.equal(
-    md,
+    markdown,
     'A paragraph with citation [@tchak] and an inline citation @tchak.\n'
   );
 });

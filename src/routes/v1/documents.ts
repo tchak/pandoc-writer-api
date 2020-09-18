@@ -1,6 +1,4 @@
 import { FastifyInstance, RequestGenericInterface } from 'fastify';
-import remark from 'remark';
-import footnotes from 'remark-footnotes';
 
 import {
   User,
@@ -9,7 +7,7 @@ import {
   DocumentVersion,
   UserToken,
 } from '../../models';
-import plugin, { BlockType } from '../../lib/mdast-slate';
+import { BlockType, parse } from '../../lib/unist';
 import { renderDocument, accepts } from '../../utils';
 
 interface CreateDocumentBody {
@@ -145,12 +143,7 @@ export default async function (server: FastifyInstance): Promise<void> {
     }
 
     if (markdown) {
-      data = (
-        await remark()
-          .use(footnotes, { inlineNotes: true })
-          .use(plugin)
-          .process(markdown)
-      ).data as BlockType[];
+      data = parse(markdown);
     }
 
     const document = await user
