@@ -45,7 +45,7 @@
     "js-yaml": "^3.14.0",
     "jsdom": "^16.4.0",
     "knex": "^0.21.5",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "luxon": "^1.25.0",
     "node-fetch": "next",
     "node-htmldiff": "^0.9.3",
