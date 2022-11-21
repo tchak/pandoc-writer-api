@@ -28,7 +28,7 @@
     "aws-sdk": "^2.756.0",
     "diff-match-patch": "^1.0.5",
     "escape-html": "^1.0.3",
-    "fastify": "^3.4.1",
+    "fastify": "^3.29.4",
     "fastify-accepts": "^2.0.1",
     "fastify-auth": "^1.0.1",
     "fastify-autoload": "^3.1.0",
